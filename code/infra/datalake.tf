@@ -53,7 +53,7 @@ resource "azurerm_storage_account" "storage" {
 }
 
 resource "azurerm_storage_container" "storage_container" {
-  for_each = var.storage_container_names
+  for_each = toset(var.storage_container_names)
 
   name                 = each.key
   storage_account_name = azurerm_storage_account.storage.name
