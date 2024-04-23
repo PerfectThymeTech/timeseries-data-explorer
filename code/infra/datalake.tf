@@ -58,9 +58,8 @@ resource "azurerm_storage_container" "storage_container" {
   name                 = each.key
   storage_account_name = azurerm_storage_account.storage.name
 
-  container_access_type             = "private"
-  encryption_scope_override_enabled = true
-  metadata                          = {}
+  container_access_type = "private"
+  metadata              = {}
 }
 
 data "azurerm_monitor_diagnostic_categories" "diagnostic_categories_storage" {
