@@ -128,6 +128,13 @@ variable "kusto_cluster_databases" {
   default   = {}
 }
 
+variable "storage_container_names" {
+  description = "Specifies the names of the storage account containers."
+  type        = list(string)
+  sensitive   = false
+  default     = []
+}
+
 # Monitoring variables
 variable "diagnostics_configurations" {
   description = "Specifies the diagnostic configuration for the service."

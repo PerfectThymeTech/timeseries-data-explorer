@@ -52,6 +52,17 @@ resource "azurerm_storage_account" "storage" {
   shared_access_key_enabled = false
 }
 
+resource "azurerm_storage_container" "storage_container" {
+  for_each = var.storage_container_names
+
+  name                 = each.key
+  storage_account_name = azurerm_storage_account.storage.name
+
+  container_access_type             = "private"
+  encryption_scope_override_enabled = true
+  metadata                          = {}
+}
+
 data "azurerm_monitor_diagnostic_categories" "diagnostic_categories_storage" {
   resource_id = azurerm_storage_account.storage.id
 }
