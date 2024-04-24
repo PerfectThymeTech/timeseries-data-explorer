@@ -1,0 +1,10 @@
+{
+	"name": "MainPipeline",
+	"properties": {
+		"description": "Main Pipeline for Orchestration",
+		"folder": {
+			"name": "Pipelines"
+		},
+		"annotations": []
+	}
+}
