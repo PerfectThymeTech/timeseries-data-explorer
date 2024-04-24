@@ -20,6 +20,7 @@ kusto_cluster_databases = {
     soft_delete_period = "P31D"
   }
 }
+storage_container_names = ["raw", "curated"]
 
 # Monitoring variables
 diagnostics_configurations = []
