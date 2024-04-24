@@ -24,6 +24,7 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "AzureDataLakeSink",
+					"description": "Sink dataset in Azure Data Lake",
 					"rejectedDataLinkedService": {
 						"referenceName": "AzureDataLakeStorage",
 						"type": "LinkedServiceReference"
