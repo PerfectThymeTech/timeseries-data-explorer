@@ -35,6 +35,7 @@ kusto_cluster_databases = {
   operationaldb = {
     hot_cache_period   = "P7D"
     soft_delete_period = "P31D"
+    init_script        = "../data-model/operationaldb.kql"
   }
 }
 storage_container_names = ["raw", "curated", "logs"]

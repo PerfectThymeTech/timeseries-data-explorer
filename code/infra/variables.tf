@@ -107,8 +107,9 @@ variable "data_factory_published_content_template_variables" {
 variable "kusto_cluster_sku" {
   description = "Specifies the kusto cluster sku name."
   type = object({
-    name     = optional(string, "Dev(No SLA)_Standard_D11_v2"),
-    capacity = optional(number, 1)
+    name        = optional(string, "Dev(No SLA)_Standard_D11_v2"),
+    capacity    = optional(number, 1)
+    init_script = string
   })
   sensitive = false
   validation {
