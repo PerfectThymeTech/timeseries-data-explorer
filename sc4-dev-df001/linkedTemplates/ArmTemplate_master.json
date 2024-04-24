@@ -1,0 +1,70 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "sc4-dev-df001"
+		},
+		"AzureDataExplorer_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
+		},
+		"AzureDataExplorer_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@linkedService().databaseName"
+		},
+		"AzureDataLakeStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sc4devstg001.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "sc4-dev-df001_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureDataExplorer_properties_typeProperties_endpoint": {
+						"value": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]"
+					},
+					"AzureDataExplorer_properties_typeProperties_database": {
+						"value": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
+					},
+					"AzureDataLakeStorage_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+					},
+					"AzureKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
