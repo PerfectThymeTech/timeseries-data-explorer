@@ -50,3 +50,17 @@ resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_datab
   role           = "Viewer"
   tenant_id      = data.azurerm_client_config.current.tenant_id
 }
+
+resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_database_principal_assignment_admin" {
+  for_each = var.kusto_cluster_databases
+
+  name                = "${each.key}-Admin-${azurerm_data_factory.data_factory.name}"
+  resource_group_name = azurerm_kusto_cluster.kusto_cluster.resource_group_name
+  cluster_name        = azurerm_kusto_cluster.kusto_cluster.name
+  database_name       = each.key
+
+  principal_id   = azurerm_data_factory.data_factory.identity[0].principal_id
+  principal_type = "App"
+  role           = "Admin"
+  tenant_id      = data.azurerm_client_config.current.tenant_id
+}
