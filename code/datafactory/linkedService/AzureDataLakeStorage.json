@@ -1,0 +1,11 @@
+{
+	"name": "AzureDataLakeStorage",
+	"properties": {
+		"description": "Azure Data Lake Storage",
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://sc4devstg001.dfs.core.windows.net/"
+		}
+	}
+}
