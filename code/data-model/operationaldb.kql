@@ -1,4 +1,4 @@
-.create table ott (
+.create table ott_raw (
     Country: string,
     Isp: string,
     CdnNodeHost: string,
