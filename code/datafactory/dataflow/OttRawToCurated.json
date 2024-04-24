@@ -114,8 +114,7 @@
 				"     assertFailure_folderPath: ($logsFolderPath),",
 				"     partitionBy('key',",
 				"          1,",
-				"          Country,",
-				"          Isp",
+				"          Country",
 				"     )) ~> AzureDataLakeSink"
 			]
 		}
