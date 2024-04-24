@@ -30,8 +30,8 @@
 			"transformations": [],
 			"scriptLines": [
 				"parameters{",
-				"     sourceFolderPath as string (toString('ott')),",
-				"     sourceFileName as string (toString('data.csv'))",
+				"     sourceFolderPath as string,",
+				"     sourceFileName as string",
 				"}",
 				"source(useSchema: false,",
 				"     allowSchemaDrift: true,",
