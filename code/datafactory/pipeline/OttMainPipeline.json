@@ -4,7 +4,7 @@
 		"description": "Main Pipeline for OTT Orchestration",
 		"activities": [
 			{
-				"name": "OttRawToCurated",
+				"name": "RawToCurated",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"policy": {
@@ -48,6 +48,55 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "CuratedToKusto",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "RawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "OttCuratedToKusto",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFileSystem": {
+							"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+							"type": "Expression"
+						},
+						"sourceFolderPath": {
+							"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
+							"type": "Expression"
+						},
+						"sinkDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@variables('kustoTable')",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@variables('logsFileSystem')",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -78,6 +127,14 @@
 			"logsFolderPath": {
 				"type": "String",
 				"defaultValue": "ott"
+			},
+			"kustoDatabase": {
+				"type": "String",
+				"defaultValue": "operationaldb"
+			},
+			"kustoTable": {
+				"type": "String",
+				"defaultValue": "ott_raw"
 			}
 		},
 		"folder": {
