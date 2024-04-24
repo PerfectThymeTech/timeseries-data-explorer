@@ -1,9 +1,23 @@
 {
-	"name": "MainPipeline",
+	"name": "OttMainPipeline",
 	"properties": {
-		"description": "Main Pipeline for Orchestration",
+		"description": "Main Pipeline for OTT Orchestration",
+		"activities": [
+			{
+				"name": "RawToCurated",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"waitOnCompletion": true
+				}
+			}
+		],
 		"folder": {
-			"name": "Pipelines"
+			"name": "Pipelines/OTT"
 		},
 		"annotations": []
 	}
