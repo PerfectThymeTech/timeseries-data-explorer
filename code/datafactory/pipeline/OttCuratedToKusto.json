@@ -8,21 +8,114 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
-					"retry": 0,
+					"retry": 3,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"dataflow": {
+						"referenceName": "OttCuratedToKusto",
+						"type": "DataFlowReference",
+						"parameters": {
+							"sourceFileSystem": {
+								"value": "'@{pipeline().parameters.sourceFileSystem}'",
+								"type": "Expression"
+							},
+							"sourceFolderPath": {
+								"value": "'@{pipeline().parameters.sourceFolderPath}'",
+								"type": "Expression"
+							},
+							"sinkTable": {
+								"value": "'@{pipeline().parameters.sinkTable}'",
+								"type": "Expression"
+							},
+							"logsFileSystem": {
+								"value": "'@{pipeline().parameters.logsFileSystem}'",
+								"type": "Expression"
+							},
+							"logsFolderPath": {
+								"value": "'@{pipeline().parameters.logsFolderPath}'",
+								"type": "Expression"
+							}
+						},
+						"linkedServiceParameters": {
+							"KustoSink": {
+								"linkedService": {
+									"databaseName": {
+										"value": "@pipeline().parameters.sinkDatabase",
+										"type": "Expression"
+									}
+								}
+							}
+						}
 					},
-					"traceLevel": "Fine"
+					"integrationRuntime": {
+						"referenceName": "IntegrationRuntime001",
+						"type": "IntegrationRuntimeReference"
+					},
+					"traceLevel": "Coarse"
+				}
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "DataflowCuratedToKusto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "sinkDatabase",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkDatabase"
+							}
+						},
+						{
+							"key": "sinkTable",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkTable"
+							}
+						}
+					],
+					"setSystemVariable": true
 				}
 			}
 		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string"
+			},
+			"sourceFolderPath": {
+				"type": "string"
+			},
+			"sinkDatabase": {
+				"type": "string"
+			},
+			"sinkTable": {
+				"type": "string"
+			},
+			"logsFileSystem": {
+				"type": "string"
+			},
+			"logsFolderPath": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "Pipelines/OTT"
 		},
