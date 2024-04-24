@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "sc4-dev-df001"
+		},
+		"AzureDataExplorer_properties_typeProperties_endpoint": {
+			"value": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
+		},
+		"AzureDataExplorer_properties_typeProperties_database": {
+			"value": "@linkedService().databaseName"
+		},
+		"AzureDataLakeStorage_properties_typeProperties_url": {
+			"value": "https://sc4devstg001.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://sc4-dev-vault001.vault.azure.net/"
+		}
+	}
+}
