@@ -1,9 +1,9 @@
 {
-	"name": "TestOttRawToCurated",
+	"name": "TestOttCuratedToKusto",
 	"properties": {
 		"activities": [
 			{
-				"name": "TestOttRawToCurated",
+				"name": "TestOttCuratedToKusto",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"policy": {
@@ -12,49 +12,29 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "OttRawToCurated",
+						"referenceName": "OttCuratedToKusto",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"sourceFolderPath": {
-							"value": "@pipeline().parameters.sourceFolderPath",
-							"type": "Expression"
-						},
-						"sourceFileName": {
-							"value": "@pipeline().parameters.sourceFileName",
-							"type": "Expression"
-						},
 						"sourceFileSystem": {
 							"value": "@pipeline().parameters.sourceFileSystem",
 							"type": "Expression"
 						},
-						"sinkFileSystem": {
-							"value": "@pipeline().parameters.sinkFileSystem",
-							"type": "Expression"
-						},
-						"sinkFolderPath": {
-							"value": "@pipeline().parameters.sinkFolderPath",
-							"type": "Expression"
-						},
-						"logsFileSystem": {
-							"value": "@pipeline().parameters.logsFileSystem",
-							"type": "Expression"
-						},
-						"logsFolderPath": {
-							"value": "@pipeline().parameters.logsFolderPath",
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.sourceFolderPath",
 							"type": "Expression"
 						}
 					}
 				}
 			},
 			{
-				"name": "GetPipelineVariableSinkFileSystem",
-				"description": "Get Pipeline Variable \"sinkFileSystem\"",
+				"name": "GetPipelineVariableSinkDatabase",
+				"description": "Get Pipeline Variable \"sinkDatabase\"",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "TestOttRawToCurated",
+						"activity": "TestOttCuratedToKusto",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -66,9 +46,9 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "sinkFileSystem",
+					"variableName": "sinkDatabase",
 					"value": {
-						"value": "@string(activity('TestOttRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+						"value": "@string(activity('TestOttCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
 						"type": "Expression"
 					}
 				}
@@ -79,7 +59,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "GetPipelineVariableSinkFileSystem",
+						"activity": "GetPipelineVariableSinkDatabase",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -88,7 +68,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+						"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -98,7 +78,7 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"message": "Unexpected Sink File System Returned",
+								"message": "Unexpected Database Name Returned",
 								"errorCode": "500"
 							}
 						}
@@ -109,23 +89,19 @@
 		"parameters": {
 			"sourceFileSystem": {
 				"type": "string",
-				"defaultValue": "raw"
+				"defaultValue": "curated"
 			},
 			"sourceFolderPath": {
 				"type": "string",
 				"defaultValue": "ott"
 			},
-			"sourceFileName": {
+			"sinkDatabase": {
 				"type": "string",
-				"defaultValue": "data.csv"
+				"defaultValue": "operationaldb"
 			},
-			"sinkFileSystem": {
+			"sinkTable": {
 				"type": "string",
-				"defaultValue": "curated"
-			},
-			"sinkFolderPath": {
-				"type": "string",
-				"defaultValue": "ott"
+				"defaultValue": "ott_raw"
 			},
 			"logsFileSystem": {
 				"type": "string",
@@ -135,20 +111,20 @@
 				"type": "string",
 				"defaultValue": "ott"
 			},
-			"expectedSinkFileSystem": {
+			"expectedSinkDatabase": {
 				"type": "string",
-				"defaultValue": "curated"
+				"defaultValue": "operationaldb"
 			},
-			"expectedSinkFolderPath": {
+			"expectedSinkTable": {
 				"type": "string",
-				"defaultValue": "ott"
+				"defaultValue": "ott_raw"
 			}
 		},
 		"variables": {
-			"sinkFileSystem": {
+			"sinkDatabase": {
 				"type": "String"
 			},
-			"sinkFolderPath": {
+			"sinkTable": {
 				"type": "String"
 			}
 		},
