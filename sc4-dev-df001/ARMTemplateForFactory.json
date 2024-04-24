@@ -40,7 +40,7 @@
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
-							"retry": 3,
+							"retry": 1,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
 							"secureInput": false
@@ -461,6 +461,166 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TestOttCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestOttCuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@pipeline().parameters.sinkTable",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkDatabase",
+						"description": "Get Pipeline Variable \"sinkDatabase\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkDatabase",
+							"value": {
+								"value": "@string(activity('TestOttCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkDatabase",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Database Name Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"sinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "string",
+						"defaultValue": "ott_raw"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"expectedSinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"expectedSinkTable": {
+						"type": "string",
+						"defaultValue": "ott_raw"
+					}
+				},
+				"variables": {
+					"sinkDatabase": {
+						"type": "String"
+					},
+					"sinkTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/OttCuratedToKusto')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TestOttRawToCurated')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -499,6 +659,14 @@
 								},
 								"sinkFolderPath": {
 									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
 									"type": "Expression"
 								}
 							}
@@ -546,7 +714,19 @@
 							"expression": {
 								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
 								"type": "Expression"
-							}
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
 						}
 					}
 				],
@@ -571,6 +751,14 @@
 						"defaultValue": "curated"
 					},
 					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
 						"type": "string",
 						"defaultValue": "ott"
 					},
@@ -714,7 +902,22 @@
 						"     logsFileSystem as string,",
 						"     logsFolderPath as string",
 						"}",
-						"source(allowSchemaDrift: true,",
+						"source(output(",
+						"          Country as string,",
+						"          Isp as string,",
+						"          CdnNodeHost as string,",
+						"          Type as string,",
+						"          Title as string,",
+						"          SelectedQuality as string,",
+						"          DeviceType as string,",
+						"          Version as string,",
+						"          Connection as string,",
+						"          CommercilizationType as string,",
+						"          DeviceVendor as string,",
+						"          HappinessScore as float,",
+						"          UserId as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
 						"     format: 'delta',",
