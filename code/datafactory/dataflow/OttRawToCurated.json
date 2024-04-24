@@ -2,6 +2,9 @@
 	"name": "OttRawToCurated",
 	"properties": {
 		"description": "Dataflow to copy OTT data from Raw to Curated",
+		"folder": {
+			"name": "OTT"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
