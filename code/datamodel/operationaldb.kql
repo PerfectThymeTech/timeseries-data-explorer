@@ -10,6 +10,6 @@
     Connection: string,
     CommercilizationType: string,
     DeviceVendor: string,
-    HappinessScore: decimal,
+    HappinessScore: real,
     UserId: string
 )
