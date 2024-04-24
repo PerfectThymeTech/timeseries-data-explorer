@@ -1,0 +1,72 @@
+{
+	"name": "OttRawToCurated",
+	"properties": {
+		"description": "Dataflow to copy OTT data from Raw to Curated",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "AzureDataLakeSource",
+					"description": "Source dataset in Azure Data Lake"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "AzureDataLakeSink",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     sourceFolderPath as string (toString('ott')),",
+				"     sourceFileName as string (toString('data.csv'))",
+				"}",
+				"source(useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'raw',",
+				"     folderPath: ($sourceFolderPath),",
+				"     fileName: ($sourceFileName),",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'curated',",
+				"     folderPath: 'ott',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: true,",
+				"     upsertable: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_fileSystem: 'logs',",
+				"     assertFailure_folderPath: 'ott') ~> AzureDataLakeSink"
+			]
+		}
+	}
+}
