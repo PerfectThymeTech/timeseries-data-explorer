@@ -37,6 +37,14 @@
 						"sinkFolderPath": {
 							"value": "@variables('curatedFolderPath')",
 							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@variables('logsFileSystem')",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
 						}
 					}
 				}
@@ -64,6 +72,10 @@
 				"defaultValue": "logs"
 			},
 			"curatedFolderPath": {
+				"type": "String",
+				"defaultValue": "ott"
+			},
+			"logsFolderPath": {
 				"type": "String",
 				"defaultValue": "ott"
 			}
