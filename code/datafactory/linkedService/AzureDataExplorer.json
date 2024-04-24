@@ -1,0 +1,18 @@
+{
+	"name": "AzureDataExplorer",
+	"properties": {
+		"description": "Azure Data Explorer",
+		"parameters": {
+			"databaseName": {
+				"type": "string",
+				"defaultValue": "operationaldb"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDataExplorer",
+		"typeProperties": {
+			"endpoint": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net",
+			"database": "@linkedService().databaseName"
+		}
+	}
+}

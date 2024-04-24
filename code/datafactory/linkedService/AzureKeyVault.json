@@ -1,0 +1,11 @@
+{
+	"name": "AzureKeyVault",
+	"properties": {
+		"description": "Azure Key Vault",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://sc4-dev-vault001.vault.azure.net/"
+		}
+	}
+}
