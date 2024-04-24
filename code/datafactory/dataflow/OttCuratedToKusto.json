@@ -1,0 +1,76 @@
+{
+	"name": "OttCuratedToKusto",
+	"properties": {
+		"folder": {
+			"name": "OTT"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "AzureDataLakeSource",
+					"description": "Source dataset in Azure Data Lake"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataExplorer",
+						"type": "LinkedServiceReference"
+					},
+					"name": "KustoSink",
+					"description": "Sink dataset in Kusto",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     sourceFileSystem as string,",
+				"     sourceFolderPath as string,",
+				"     sinkTable as string,",
+				"     logsFileSystem as string,",
+				"     logsFolderPath as string",
+				"}",
+				"source(output(",
+				"          Country as string,",
+				"          Isp as string,",
+				"          CdnNodeHost as string,",
+				"          Type as string,",
+				"          Title as string,",
+				"          SelectedQuality as string,",
+				"          DeviceType as string,",
+				"          Version as string,",
+				"          Connection as string,",
+				"          CommercilizationType as string,",
+				"          DeviceVendor as string,",
+				"          HappinessScore as float,",
+				"          UserId as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: ($sourceFileSystem),",
+				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
+				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: ($sinkTable),",
+				"     store: 'azuredataexplorer',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_fileSystem: ($logsFileSystem),",
+				"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
+			]
+		}
+	}
+}

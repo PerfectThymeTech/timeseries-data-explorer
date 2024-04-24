@@ -1,0 +1,160 @@
+{
+	"name": "TestOttRawToCurated",
+	"properties": {
+		"activities": [
+			{
+				"name": "TestOttRawToCurated",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "OttRawToCurated",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.sourceFolderPath",
+							"type": "Expression"
+						},
+						"sourceFileName": {
+							"value": "@pipeline().parameters.sourceFileName",
+							"type": "Expression"
+						},
+						"sourceFileSystem": {
+							"value": "@pipeline().parameters.sourceFileSystem",
+							"type": "Expression"
+						},
+						"sinkFileSystem": {
+							"value": "@pipeline().parameters.sinkFileSystem",
+							"type": "Expression"
+						},
+						"sinkFolderPath": {
+							"value": "@pipeline().parameters.sinkFolderPath",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@pipeline().parameters.logsFileSystem",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@pipeline().parameters.logsFolderPath",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkFileSystem",
+				"description": "Get Pipeline Variable \"sinkFileSystem\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestOttRawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFileSystem",
+					"value": {
+						"value": "@string(activity('TestOttRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "IfSinkFileSystem",
+				"description": "",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetPipelineVariableSinkFileSystem",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Sink File System Returned",
+								"errorCode": "500"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"sourceFolderPath": {
+				"type": "string",
+				"defaultValue": "ott"
+			},
+			"sourceFileName": {
+				"type": "string",
+				"defaultValue": "data.csv"
+			},
+			"sinkFileSystem": {
+				"type": "string",
+				"defaultValue": "curated"
+			},
+			"sinkFolderPath": {
+				"type": "string",
+				"defaultValue": "ott"
+			},
+			"logsFileSystem": {
+				"type": "string",
+				"defaultValue": "logs"
+			},
+			"logsFolderPath": {
+				"type": "string",
+				"defaultValue": "ott"
+			},
+			"expectedSinkFileSystem": {
+				"type": "string",
+				"defaultValue": "curated"
+			},
+			"expectedSinkFolderPath": {
+				"type": "string",
+				"defaultValue": "ott"
+			}
+		},
+		"variables": {
+			"sinkFileSystem": {
+				"type": "String"
+			},
+			"sinkFolderPath": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Tests/OTT"
+		},
+		"annotations": []
+	}
+}

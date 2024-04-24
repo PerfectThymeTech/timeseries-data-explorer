@@ -51,6 +51,17 @@ resource "azurerm_kusto_database" "kusto_database" {
   }
 }
 
+resource "azurerm_kusto_script" "kusto_script" {
+  for_each = var.kusto_cluster_databases
+
+  name        = "init-db-${each.key}"
+  database_id = azurerm_kusto_database.kusto_database[each.key].id
+
+  continue_on_errors_enabled         = false
+  force_an_update_when_value_changed = filebase64(each.value.init_script)
+  script_content                     = file(each.value.init_script)
+}
+
 data "azurerm_monitor_diagnostic_categories" "diagnostic_categories_kusto_cluster" {
   resource_id = azurerm_kusto_cluster.kusto_cluster.id
 }

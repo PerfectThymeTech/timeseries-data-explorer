@@ -1,0 +1,15 @@
+.create table ott_raw (
+    Country: string,
+    Isp: string,
+    CdnNodeHost: string,
+    Type: string,
+    Title: string,
+    SelectedQuality: string,
+    DeviceType: string,
+    Version: string,
+    Connection: string,
+    CommercilizationType: string,
+    DeviceVendor: string,
+    HappinessScore: decimal,
+    UserId: string
+)

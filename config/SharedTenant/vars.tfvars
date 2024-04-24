@@ -19,8 +19,8 @@ data_factory_github_repo = {
 }
 data_factory_global_parameters = {}
 data_factory_published_content = {
-  # parameters_file = "../datafactory/ARMTemplateParametersForFactory.json"
-  # template_file   = "../datafactory/ARMTemplateForFactory.json"
+  # parameters_file = "../sample/ARMTemplateParametersForFactory.json"
+  # template_file   = "../sample/ARMTemplateForFactory.json"
 }
 data_factory_published_content_template_variables = {}
 kusto_cluster_sku = {
@@ -35,9 +35,10 @@ kusto_cluster_databases = {
   operationaldb = {
     hot_cache_period   = "P7D"
     soft_delete_period = "P31D"
+    init_script        = "../datamodel/operationaldb.kql"
   }
 }
-storage_container_names = ["raw", "curated"]
+storage_container_names = ["raw", "curated", "logs"]
 
 # Monitoring variables
 diagnostics_configurations = []
