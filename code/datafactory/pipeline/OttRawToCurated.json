@@ -20,8 +20,26 @@
 						"referenceName": "OttRawToCurated",
 						"type": "DataFlowReference",
 						"parameters": {
-							"sourceFolderPath": "toString('ott')",
-							"sourceFileName": "toString('data.csv')"
+							"sourceFolderPath": {
+								"value": "'@{pipeline().parameters.sourceFolderPath}'",
+								"type": "Expression"
+							},
+							"sourceFileName": {
+								"value": "'@{pipeline().parameters.sourceFileName}'",
+								"type": "Expression"
+							},
+							"sourceFileSystem": {
+								"value": "'@{pipeline().parameters.sourceFileSystem}'",
+								"type": "Expression"
+							},
+							"sinkFileSystem": {
+								"value": "'@{pipeline().parameters.sinkFileSystem}'",
+								"type": "Expression"
+							},
+							"sinkFolderPath": {
+								"value": "'@{pipeline().parameters.sinkFolderPath}'",
+								"type": "Expression"
+							}
 						}
 					},
 					"integrationRuntime": {
@@ -37,6 +55,15 @@
 				"type": "string"
 			},
 			"sourceFileName": {
+				"type": "string"
+			},
+			"sourceFileSystem": {
+				"type": "string"
+			},
+			"sinkFileSystem": {
+				"type": "string"
+			},
+			"sinkFolderPath": {
 				"type": "string"
 			}
 		},
