@@ -48,6 +48,43 @@
 					},
 					"traceLevel": "Coarse"
 				}
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "DataflowRawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "sinkFileSystem",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFileSystem"
+							}
+						},
+						{
+							"key": "sinkFolderPath",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFolderPath"
+							}
+						}
+					],
+					"setSystemVariable": true
+				}
 			}
 		],
 		"parameters": {
