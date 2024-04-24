@@ -24,6 +24,22 @@
 						"sourceFolderPath": {
 							"value": "@pipeline().parameters.sourceFolderPath",
 							"type": "Expression"
+						},
+						"sinkDatabase": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@pipeline().parameters.sinkTable",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@pipeline().parameters.logsFileSystem",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@pipeline().parameters.logsFolderPath",
+							"type": "Expression"
 						}
 					}
 				}
