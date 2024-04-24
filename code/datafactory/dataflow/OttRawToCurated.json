@@ -70,7 +70,7 @@
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
 				"AzureDataLakeSource select(mapColumn(",
 				"          Country,",
-				"          ISP,",
+				"          Isp = ISP,",
 				"          CdnNodeHost = {CDN Node Host},",
 				"          Type,",
 				"          Title,",
@@ -105,7 +105,13 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",
 				"     assertFailure_fileSystem: 'logs',",
-				"     assertFailure_folderPath: 'ott') ~> AzureDataLakeSink"
+				"     assertFailure_folderPath: 'ott',",
+				"     partitionBy('key',",
+				"          1,",
+				"          Country,",
+				"          Isp,",
+				"          CdnNodeHost",
+				"     )) ~> AzureDataLakeSink"
 			]
 		}
 	}
