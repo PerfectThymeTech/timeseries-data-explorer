@@ -1,0 +1,75 @@
+{
+	"name": "TestOttRawToCurated",
+	"properties": {
+		"activities": [
+			{
+				"name": "TestOttRawToCurated",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "OttRawToCurated",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkFileSystem",
+				"description": "Get Pipeline Variable \"sinkFileSystem\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestOttRawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			}
+		],
+		"variables": {
+			"sourceFileSystem": {
+				"type": "String",
+				"defaultValue": "raw"
+			},
+			"sourceFolderPath": {
+				"type": "String",
+				"defaultValue": "ott"
+			},
+			"sourceFileName": {
+				"type": "String",
+				"defaultValue": "data.csv"
+			},
+			"sinkFileSystem": {
+				"type": "String",
+				"defaultValue": "curated"
+			},
+			"sinkFolderPath": {
+				"type": "String",
+				"defaultValue": "ott"
+			},
+			"expectedSinkFileSystem": {
+				"type": "String",
+				"defaultValue": "curated"
+			},
+			"expectedSinkFolderPath": {
+				"type": "String",
+				"defaultValue": "ott"
+			}
+		},
+		"folder": {
+			"name": "Tests/OTT"
+		},
+		"annotations": []
+	}
+}
