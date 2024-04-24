@@ -19,8 +19,8 @@ data_factory_github_repo = {
 }
 data_factory_global_parameters = {}
 data_factory_published_content = {
-  # parameters_file = "../datafactory/ARMTemplateParametersForFactory.json"
-  # template_file   = "../datafactory/ARMTemplateForFactory.json"
+  # parameters_file = "../sample/ARMTemplateParametersForFactory.json"
+  # template_file   = "../sample/ARMTemplateForFactory.json"
 }
 data_factory_published_content_template_variables = {}
 kusto_cluster_sku = {
