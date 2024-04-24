@@ -4,7 +4,19 @@ prefix      = "sc4"
 tags        = {}
 
 # Service variables
-data_factory_azure_devops_repo = {}
+data_factory_azure_devops_repo = {
+  testkey = {
+    type  = "String"
+    value = "testvalue"
+  }
+}
+data_factory_github_repo = {
+  account_name    = "PerfectThymeTech"
+  branch_name     = "main"
+  git_url         = "https://github.com"
+  repository_name = "timeseries-data-explorer"
+  root_folder     = "/code/datafactory"
+}
 data_factory_global_parameters = {}
 data_factory_published_content = {
   # parameters_file = "../datafactory/ARMTemplateParametersForFactory.json"
