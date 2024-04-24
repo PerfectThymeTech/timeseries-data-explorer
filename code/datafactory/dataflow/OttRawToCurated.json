@@ -27,7 +27,12 @@
 					}
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "RenameColumns",
+					"description": "Rename the columns"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     sourceFolderPath as string,",
@@ -48,7 +53,12 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"AzureDataLakeSource select(mapColumn(",
+				"          Country",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+				"RenameColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
 				"     fileSystem: ($sinkFileSystem),",
