@@ -13,7 +13,3 @@
     HappinessScore: decimal,
     UserId: string
 )
-
-.create table test (
-    name: string
-)
