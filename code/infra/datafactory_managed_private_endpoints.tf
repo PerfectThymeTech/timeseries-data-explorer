@@ -63,13 +63,13 @@ resource "azurerm_data_factory_managed_private_endpoint" "data_factory_managed_p
   target_resource_id = azurerm_kusto_cluster.kusto_cluster.id
 }
 
-resource "null_resource" "data_factory_managed_private_endpoint_kusto_cluster_approval" {
-  triggers = {
-    run_once = "true"
-  }
-  provisioner "local-exec" {
-    working_dir = "${path.module}/../scripts/"
-    interpreter = ["pwsh", "-Command"]
-    command     = "./Approve-ManagedPrivateEndpoint.ps1 -ResourceId '${azurerm_kusto_cluster.kusto_cluster.id}' -WorkspaceName '${azurerm_data_factory.data_factory.name}' -ManagedPrivateEndpointName '${azurerm_data_factory_managed_private_endpoint.data_factory_managed_private_endpoint_kusto_cluster.name}'"
-  }
-}
+# resource "null_resource" "data_factory_managed_private_endpoint_kusto_cluster_approval" {
+#   triggers = {
+#     run_once = "true"
+#   }
+#   provisioner "local-exec" {
+#     working_dir = "${path.module}/../scripts/"
+#     interpreter = ["pwsh", "-Command"]
+#     command     = "./Approve-ManagedPrivateEndpoint.ps1 -ResourceId '${azurerm_kusto_cluster.kusto_cluster.id}' -WorkspaceName '${azurerm_data_factory.data_factory.name}' -ManagedPrivateEndpointName '${azurerm_data_factory_managed_private_endpoint.data_factory_managed_private_endpoint_kusto_cluster.name}'"
+#   }
+# }

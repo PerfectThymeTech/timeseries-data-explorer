@@ -7,9 +7,10 @@ tags        = {}
 data_factory_azure_devops_repo = {}
 data_factory_global_parameters = {}
 data_factory_published_content = {
-  # parameters_file = ""
-  # template_file   = ""
+  parameters_file = "../datafactory/ARMTemplateParametersForFactory.json"
+  template_file   = "../datafactory/ARMTemplateForFactory.json"
 }
+data_factory_published_content_template_variables = {}
 kusto_cluster_sku = {
   name     = "Standard_E2ads_v5",
   capacity = 2

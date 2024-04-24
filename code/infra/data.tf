@@ -6,18 +6,6 @@ data "azurerm_location" "current" {
   location = var.location
 }
 
-data "local_file" "data_factory_parameters_file" {
-  count = var.data_factory_published_content != {} ? [1] : []
-
-  filename = var.data_factory_published_content.parameters_file
-}
-
-data "local_file" "data_factory_template_file" {
-  count = var.data_factory_published_content != {} ? [1] : []
-
-  filename = var.data_factory_published_content.template_file
-}
-
 # data "azurerm_virtual_network" "virtual_network" {
 #   name                = local.virtual_network.name
 #   resource_group_name = local.virtual_network.resource_group_name

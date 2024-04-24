@@ -51,6 +51,22 @@ variable "data_factory_azure_devops_repo" {
   default   = {}
 }
 
+variable "data_factory_github_repo" {
+  description = "Specifies the Github repository configuration."
+  type = object(
+    {
+      account_name    = optional(string, "")
+      branch_name     = optional(string, "")
+      git_url         = optional(string, "")
+      repository_name = optional(string, "")
+      root_folder     = optional(string, "")
+    }
+  )
+  sensitive = false
+  nullable  = false
+  default   = {}
+}
+
 variable "data_factory_global_parameters" {
   description = "Specifies the Azure Data Factory global parameters."
   type = map(object({
@@ -70,15 +86,22 @@ variable "data_factory_global_parameters" {
 
 variable "data_factory_published_content" {
   description = "Specifies the Azure Devops repository configuration."
-  type = optional(object(
+  type = object(
     {
-      parameters_file = string
-      template_file   = string
+      parameters_file = optional(string, "")
+      template_file   = optional(string, "")
     }
-  ), {})
+  )
   sensitive = false
   nullable  = false
   default   = {}
+}
+
+variable "data_factory_published_content_template_variables" {
+  description = "Specifies custom template variables to use for the deployment templates from ADF."
+  type        = map(string)
+  sensitive   = false
+  default     = {}
 }
 
 variable "kusto_cluster_sku" {
