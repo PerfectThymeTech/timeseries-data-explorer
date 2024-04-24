@@ -36,6 +36,14 @@
 						"sinkFolderPath": {
 							"value": "@pipeline().parameters.sinkFolderPath",
 							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@pipeline().parameters.logsFileSystem",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@pipeline().parameters.logsFolderPath",
+							"type": "Expression"
 						}
 					}
 				}
@@ -82,7 +90,19 @@
 					"expression": {
 						"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
 						"type": "Expression"
-					}
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Sink File System Returned",
+								"errorCode": "500"
+							}
+						}
+					]
 				}
 			}
 		],
@@ -104,6 +124,14 @@
 				"defaultValue": "curated"
 			},
 			"sinkFolderPath": {
+				"type": "string",
+				"defaultValue": "ott"
+			},
+			"logsFileSystem": {
+				"type": "string",
+				"defaultValue": "logs"
+			},
+			"logsFolderPath": {
 				"type": "string",
 				"defaultValue": "ott"
 			},

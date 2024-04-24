@@ -78,7 +78,7 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"message": "Unexpected Database Name returned",
+								"message": "Unexpected Database Name Returned",
 								"errorCode": "500"
 							}
 						}
