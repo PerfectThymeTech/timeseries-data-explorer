@@ -15,7 +15,29 @@
 						"referenceName": "OttRawToCurated",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.sourceFolderPath",
+							"type": "Expression"
+						},
+						"sourceFileName": {
+							"value": "@pipeline().parameters.sourceFileName",
+							"type": "Expression"
+						},
+						"sourceFileSystem": {
+							"value": "@pipeline().parameters.sourceFileSystem",
+							"type": "Expression"
+						},
+						"sinkFileSystem": {
+							"value": "@pipeline().parameters.sinkFileSystem",
+							"type": "Expression"
+						},
+						"sinkFolderPath": {
+							"value": "@pipeline().parameters.sinkFolderPath",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{

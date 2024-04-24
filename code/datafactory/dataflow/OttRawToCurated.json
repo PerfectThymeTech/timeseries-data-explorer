@@ -2,6 +2,9 @@
 	"name": "OttRawToCurated",
 	"properties": {
 		"description": "Dataflow to copy OTT data from Raw to Curated",
+		"folder": {
+			"name": "OTT"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -21,22 +24,45 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "AzureDataLakeSink",
+					"description": "Sink dataset in Azure Data Lake",
 					"rejectedDataLinkedService": {
 						"referenceName": "AzureDataLakeStorage",
 						"type": "LinkedServiceReference"
 					}
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "RenameColumns",
+					"description": "Rename Columns"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     sourceFolderPath as string,",
 				"     sourceFileName as string,",
 				"     sourceFileSystem as string,",
 				"     sinkFileSystem as string,",
-				"     sinkFolderPath as string",
+				"     sinkFolderPath as string,",
+				"     logsFileSystem as string,",
+				"     logsFolderPath as string",
 				"}",
-				"source(useSchema: false,",
+				"source(output(",
+				"          Country as string,",
+				"          ISP as string,",
+				"          {CDN Node Host} as string,",
+				"          Type as string,",
+				"          Title as string,",
+				"          SELECTED_QUALITY as string,",
+				"          DEVICE_TYPE as string,",
+				"          VERSION as string,",
+				"          CONNECTION as string,",
+				"          {COMMERCIALIZATION TYPE} as string,",
+				"          {Device Vendor} as string,",
+				"          {Happiness Score} as float,",
+				"          {User ID} as string",
+				"     ),",
+				"     useSchema: false,",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
@@ -48,7 +74,24 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"AzureDataLakeSource select(mapColumn(",
+				"          Country,",
+				"          Isp = ISP,",
+				"          CdnNodeHost = {CDN Node Host},",
+				"          Type,",
+				"          Title,",
+				"          SelectedQuality = SELECTED_QUALITY,",
+				"          DeviceType = DEVICE_TYPE,",
+				"          Version = VERSION,",
+				"          Connection = CONNECTION,",
+				"          CommercilizationType = {COMMERCIALIZATION TYPE},",
+				"          DeviceVendor = {Device Vendor},",
+				"          HappinessScore = {Happiness Score},",
+				"          UserId = {User ID}",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+				"RenameColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
 				"     fileSystem: ($sinkFileSystem),",
@@ -67,8 +110,12 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",
-				"     assertFailure_fileSystem: 'logs',",
-				"     assertFailure_folderPath: 'ott') ~> AzureDataLakeSink"
+				"     assertFailure_fileSystem: ($logsFileSystem),",
+				"     assertFailure_folderPath: ($logsFolderPath),",
+				"     partitionBy('key',",
+				"          1,",
+				"          Country",
+				"     )) ~> AzureDataLakeSink"
 			]
 		}
 	}

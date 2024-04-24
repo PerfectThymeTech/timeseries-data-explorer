@@ -1,10 +1,9 @@
 {
-	"name": "OttRawToCurated",
+	"name": "OttCuratedToKusto",
 	"properties": {
-		"description": "Pipeline to move OTT data from Raw to curated",
 		"activities": [
 			{
-				"name": "DataflowRawToCurated",
+				"name": "DataflowCuratedToKusto",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -17,27 +16,19 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "OttRawToCurated",
+						"referenceName": "OttCuratedToKusto",
 						"type": "DataFlowReference",
 						"parameters": {
-							"sourceFolderPath": {
-								"value": "'@{pipeline().parameters.sourceFolderPath}'",
-								"type": "Expression"
-							},
-							"sourceFileName": {
-								"value": "'@{pipeline().parameters.sourceFileName}'",
-								"type": "Expression"
-							},
 							"sourceFileSystem": {
 								"value": "'@{pipeline().parameters.sourceFileSystem}'",
 								"type": "Expression"
 							},
-							"sinkFileSystem": {
-								"value": "'@{pipeline().parameters.sinkFileSystem}'",
+							"sourceFolderPath": {
+								"value": "'@{pipeline().parameters.sourceFolderPath}'",
 								"type": "Expression"
 							},
-							"sinkFolderPath": {
-								"value": "'@{pipeline().parameters.sinkFolderPath}'",
+							"sinkTable": {
+								"value": "'@{pipeline().parameters.sinkTable}'",
 								"type": "Expression"
 							},
 							"logsFileSystem": {
@@ -47,6 +38,16 @@
 							"logsFolderPath": {
 								"value": "'@{pipeline().parameters.logsFolderPath}'",
 								"type": "Expression"
+							}
+						},
+						"linkedServiceParameters": {
+							"KustoSink": {
+								"linkedService": {
+									"databaseName": {
+										"value": "@pipeline().parameters.sinkDatabase",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					},
@@ -62,7 +63,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "DataflowRawToCurated",
+						"activity": "DataflowCuratedToKusto",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -77,17 +78,17 @@
 					"variableName": "pipelineReturnValue",
 					"value": [
 						{
-							"key": "sinkFileSystem",
+							"key": "sinkDatabase",
 							"value": {
 								"type": "Expression",
-								"content": "@pipeline().parameters.sinkFileSystem"
+								"content": "@pipeline().parameters.sinkDatabase"
 							}
 						},
 						{
-							"key": "sinkFolderPath",
+							"key": "sinkTable",
 							"value": {
 								"type": "Expression",
-								"content": "@pipeline().parameters.sinkFolderPath"
+								"content": "@pipeline().parameters.sinkTable"
 							}
 						}
 					],
@@ -96,19 +97,16 @@
 			}
 		],
 		"parameters": {
-			"sourceFolderPath": {
-				"type": "string"
-			},
-			"sourceFileName": {
-				"type": "string"
-			},
 			"sourceFileSystem": {
 				"type": "string"
 			},
-			"sinkFileSystem": {
+			"sourceFolderPath": {
 				"type": "string"
 			},
-			"sinkFolderPath": {
+			"sinkDatabase": {
+				"type": "string"
+			},
+			"sinkTable": {
 				"type": "string"
 			},
 			"logsFileSystem": {
