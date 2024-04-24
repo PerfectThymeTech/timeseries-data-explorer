@@ -107,9 +107,8 @@ variable "data_factory_published_content_template_variables" {
 variable "kusto_cluster_sku" {
   description = "Specifies the kusto cluster sku name."
   type = object({
-    name        = optional(string, "Dev(No SLA)_Standard_D11_v2"),
-    capacity    = optional(number, 1)
-    init_script = string
+    name     = optional(string, "Dev(No SLA)_Standard_D11_v2"),
+    capacity = optional(number, 1),
   })
   sensitive = false
   validation {
@@ -160,6 +159,7 @@ variable "kusto_cluster_databases" {
   type = map(object({
     hot_cache_period   = optional(string, "P7D"),
     soft_delete_period = optional(string, "P31D"),
+    init_script        = string,
   }))
   sensitive = false
   default   = {}
