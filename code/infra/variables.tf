@@ -68,6 +68,19 @@ variable "data_factory_global_parameters" {
   }
 }
 
+variable "data_factory_published_content" {
+  description = "Specifies the Azure Devops repository configuration."
+  type = object(
+    {
+      parameters_file = string
+      template_file   = string
+    }
+  )
+  sensitive = false
+  nullable  = false
+  default   = {}
+}
+
 variable "kusto_cluster_sku" {
   description = "Specifies the kusto cluster sku name."
   type = object({
