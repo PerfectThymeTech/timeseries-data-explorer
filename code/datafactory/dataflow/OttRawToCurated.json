@@ -109,8 +109,7 @@
 				"     partitionBy('key',",
 				"          1,",
 				"          Country,",
-				"          Isp,",
-				"          CdnNodeHost",
+				"          Isp",
 				"     )) ~> AzureDataLakeSink"
 			]
 		}
