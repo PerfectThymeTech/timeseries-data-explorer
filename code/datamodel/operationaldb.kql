@@ -13,3 +13,21 @@
     HappinessScore: real,
     UserId: string
 )
+
+.create table iptv_raw (
+    AppVersion: string,
+    Country: string,
+    HappinessScore: real,
+    HwModel: string,
+    Service: str,
+    ServiceType: string,
+    StbModel: string,
+    StreamingProtocol: string,
+    Title: string,
+    Topology2: string,
+    Topology3: string,
+    Topology4: string,
+    Topology5: string,
+    TvModel: string,
+    UserId: string
+)
