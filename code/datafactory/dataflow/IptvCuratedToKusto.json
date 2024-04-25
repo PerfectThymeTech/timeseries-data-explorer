@@ -1,0 +1,78 @@
+{
+	"name": "IptvCuratedToKusto",
+	"properties": {
+		"folder": {
+			"name": "IPTV"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "AzureDataLakeSource",
+					"description": "Source dataset in Azure Data Lake"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataExplorer",
+						"type": "LinkedServiceReference"
+					},
+					"name": "KustoSink",
+					"description": "Sink dataset in Kusto",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     sourceFileSystem as string,",
+				"     sourceFolderPath as string,",
+				"     sinkTable as string,",
+				"     logsFileSystem as string,",
+				"     logsFolderPath as string",
+				"}",
+				"source(output(",
+				"          AppVersion as string,",
+				"          Country as string,",
+				"          HappinessScore as float,",
+				"          HwModel as string,",
+				"          Service as string,",
+				"          ServiceType as string,",
+				"          StbModel as string,",
+				"          StreamingProtocol as string,",
+				"          Title as string,",
+				"          Topology2 as string,",
+				"          Topology3 as string,",
+				"          Topology4 as string,",
+				"          Topology5 as string,",
+				"          TvModel as string,",
+				"          UserId as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: ($sourceFileSystem),",
+				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
+				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: ($sinkTable),",
+				"     store: 'azuredataexplorer',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_fileSystem: ($logsFileSystem),",
+				"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
+			]
+		}
+	}
+}
