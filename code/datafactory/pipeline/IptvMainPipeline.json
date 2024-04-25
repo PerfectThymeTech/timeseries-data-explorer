@@ -1,0 +1,147 @@
+{
+	"name": "IptvMainPipeline",
+	"properties": {
+		"description": "Main Pipeline for IPTV Orchestration",
+		"activities": [
+			{
+				"name": "RawToCurated",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "IptvRawToCurated",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.rawSourceFolderPath",
+							"type": "Expression"
+						},
+						"sourceFileName": {
+							"value": "@pipeline().parameters.rawSourceFileName",
+							"type": "Expression"
+						},
+						"sourceFileSystem": {
+							"value": "@variables('rawFileSystem')",
+							"type": "Expression"
+						},
+						"sinkFileSystem": {
+							"value": "@variables('curatedFileSystem')",
+							"type": "Expression"
+						},
+						"sinkFolderPath": {
+							"value": "@variables('curatedFolderPath')",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@variables('logsFileSystem')",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "CuratedToKusto",
+				"type": "ExecutePipeline",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "RawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "OttCuratedToKusto",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFileSystem": {
+							"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+							"type": "Expression"
+						},
+						"sourceFolderPath": {
+							"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
+							"type": "Expression"
+						},
+						"sinkDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@variables('kustoTable')",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@variables('logsFileSystem')",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"rawSourceFolderPath": {
+				"type": "string"
+			},
+			"rawSourceFileName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"rawFileSystem": {
+				"type": "String",
+				"defaultValue": "raw"
+			},
+			"curatedFileSystem": {
+				"type": "String",
+				"defaultValue": "curated"
+			},
+			"logsFileSystem": {
+				"type": "String",
+				"defaultValue": "logs"
+			},
+			"curatedFolderPath": {
+				"type": "String",
+				"defaultValue": "iptv"
+			},
+			"logsFolderPath": {
+				"type": "String",
+				"defaultValue": "iptv"
+			},
+			"kustoDatabase": {
+				"type": "String",
+				"defaultValue": "operationaldb"
+			},
+			"kustoTable": {
+				"type": "String",
+				"defaultValue": "iptv_raw"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/IPTV"
+		},
+		"annotations": []
+	}
+}
