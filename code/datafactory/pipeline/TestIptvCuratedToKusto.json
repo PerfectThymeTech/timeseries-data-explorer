@@ -12,7 +12,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "OttCuratedToKusto",
+						"referenceName": "IptvCuratedToKusto",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
