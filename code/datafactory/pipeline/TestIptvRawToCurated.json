@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "TestOttRawToCurated",
+				"name": "TestIptvRawToCurated",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"policy": {
@@ -54,7 +54,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "TestOttRawToCurated",
+						"activity": "TestIptvRawToCurated",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -68,7 +68,7 @@
 				"typeProperties": {
 					"variableName": "sinkFileSystem",
 					"value": {
-						"value": "@string(activity('TestOttRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+						"value": "@string(activity('TestIptvRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
 						"type": "Expression"
 					}
 				}
