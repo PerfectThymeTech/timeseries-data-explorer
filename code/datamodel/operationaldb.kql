@@ -19,7 +19,7 @@
     Country: string,
     HappinessScore: real,
     HwModel: string,
-    Service: str,
+    Service: string,
     ServiceType: string,
     StbModel: string,
     StreamingProtocol: string,
