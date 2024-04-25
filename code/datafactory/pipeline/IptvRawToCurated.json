@@ -1,0 +1,126 @@
+{
+	"name": "IptvRawToCurated",
+	"properties": {
+		"description": "Pipeline to move IPTV data from Raw to curated",
+		"activities": [
+			{
+				"name": "DataflowRawToCurated",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "IptvRawToCurated",
+						"type": "DataFlowReference",
+						"parameters": {
+							"sourceFolderPath": {
+								"value": "'@{pipeline().parameters.sourceFolderPath}'",
+								"type": "Expression"
+							},
+							"sourceFileName": {
+								"value": "'@{pipeline().parameters.sourceFileName}'",
+								"type": "Expression"
+							},
+							"sourceFileSystem": {
+								"value": "'@{pipeline().parameters.sourceFileSystem}'",
+								"type": "Expression"
+							},
+							"sinkFileSystem": {
+								"value": "'@{pipeline().parameters.sinkFileSystem}'",
+								"type": "Expression"
+							},
+							"sinkFolderPath": {
+								"value": "'@{pipeline().parameters.sinkFolderPath}'",
+								"type": "Expression"
+							},
+							"logsFileSystem": {
+								"value": "'@{pipeline().parameters.logsFileSystem}'",
+								"type": "Expression"
+							},
+							"logsFolderPath": {
+								"value": "'@{pipeline().parameters.logsFolderPath}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"integrationRuntime": {
+						"referenceName": "IntegrationRuntime001",
+						"type": "IntegrationRuntimeReference"
+					},
+					"traceLevel": "Coarse"
+				}
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "DataflowRawToCurated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "sinkFileSystem",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFileSystem"
+							}
+						},
+						{
+							"key": "sinkFolderPath",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFolderPath"
+							}
+						}
+					],
+					"setSystemVariable": true
+				}
+			}
+		],
+		"parameters": {
+			"sourceFolderPath": {
+				"type": "string"
+			},
+			"sourceFileName": {
+				"type": "string"
+			},
+			"sourceFileSystem": {
+				"type": "string"
+			},
+			"sinkFileSystem": {
+				"type": "string"
+			},
+			"sinkFolderPath": {
+				"type": "string"
+			},
+			"logsFileSystem": {
+				"type": "string"
+			},
+			"logsFolderPath": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/IPTV"
+		},
+		"annotations": []
+	}
+}
