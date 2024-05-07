@@ -5,7 +5,7 @@ tags        = {}
 
 # Service variables
 data_factory_azure_devops_repo = {}
-data_factory_github_repo = {}
+data_factory_github_repo       = {}
 data_factory_global_parameters = {}
 data_factory_published_content = {
   parameters_file = "../../sc4-dev-df001/ARMTemplateParametersForFactory.json"
