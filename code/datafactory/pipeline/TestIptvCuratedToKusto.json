@@ -1,0 +1,152 @@
+{
+	"name": "TestIptvCuratedToKusto",
+	"properties": {
+		"activities": [
+			{
+				"name": "TestIptvCuratedToKusto",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "IptvCuratedToKusto",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFileSystem": {
+							"value": "@pipeline().parameters.sourceFileSystem",
+							"type": "Expression"
+						},
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.sourceFolderPath",
+							"type": "Expression"
+						},
+						"sinkDatabase": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@pipeline().parameters.sinkTable",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@pipeline().parameters.logsFileSystem",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@pipeline().parameters.logsFolderPath",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkDatabase",
+				"description": "Get Pipeline Variable \"sinkDatabase\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestIptvCuratedToKusto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkDatabase",
+					"value": {
+						"value": "@string(activity('TestIptvCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "IfSinkFileSystem",
+				"description": "",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetPipelineVariableSinkDatabase",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Database Name Returned",
+								"errorCode": "500"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string",
+				"defaultValue": "curated"
+			},
+			"sourceFolderPath": {
+				"type": "string",
+				"defaultValue": "iptv"
+			},
+			"sinkDatabase": {
+				"type": "string",
+				"defaultValue": "operationaldb"
+			},
+			"sinkTable": {
+				"type": "string",
+				"defaultValue": "iptv_raw"
+			},
+			"logsFileSystem": {
+				"type": "string",
+				"defaultValue": "logs"
+			},
+			"logsFolderPath": {
+				"type": "string",
+				"defaultValue": "iptv"
+			},
+			"expectedSinkDatabase": {
+				"type": "string",
+				"defaultValue": "operationaldb"
+			},
+			"expectedSinkTable": {
+				"type": "string",
+				"defaultValue": "iptv_raw"
+			}
+		},
+		"variables": {
+			"sinkDatabase": {
+				"type": "String"
+			},
+			"sinkTable": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Tests/IPTV"
+		},
+		"annotations": []
+	}
+}
