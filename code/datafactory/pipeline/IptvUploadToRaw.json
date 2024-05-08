@@ -1,0 +1,66 @@
+{
+	"name": "IptvUploadToRaw",
+	"properties": {
+		"description": "Pipeline to move IPTV data from Upload to Raw",
+		"activities": [
+			{
+				"name": "CopyUploadToRaw",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"deleteFilesAfterCompletion": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BinarySource",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceFileSystem": {
+								"value": "@pipeline().parameters.sourceFileSystem",
+								"type": "Expression"
+							},
+							"sourceFolderPath": {
+								"value": "@pipeline().parameters.sourceFolderPath",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string"
+			},
+			"sourceFolderPath": {
+				"type": "string"
+			},
+			"sourceFileName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/IPTV"
+		},
+		"annotations": []
+	}
+}
