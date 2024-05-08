@@ -38,7 +38,7 @@ kusto_cluster_databases = {
     init_script        = "../datamodel/operationaldb.kql"
   }
 }
-storage_container_names = ["raw", "curated", "logs"]
+storage_container_names = ["upload-iptv", "upload-otv", "raw", "curated", "logs"]
 
 # Monitoring variables
 diagnostics_configurations = []
