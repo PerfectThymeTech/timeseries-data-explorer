@@ -29,6 +29,438 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/IptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataflowCuratedToKusto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "IptvCuratedToKusto",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sinkTable": {
+										"value": "'@{pipeline().parameters.sinkTable}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"KustoSink": {}
+								},
+								"linkedServiceParameters": {
+									"KustoSink": {
+										"linkedService": {
+											"databaseName": {
+												"value": "@pipeline().parameters.sinkDatabase",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							},
+							"staging": {},
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkDatabase",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkDatabase"
+									}
+								},
+								{
+									"key": "sinkTable",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkTable"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvMainPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Main Pipeline for IPTV Orchestration",
+				"activities": [
+					{
+						"name": "RawToCurated",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvRawToCurated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.rawSourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.rawSourceFileName",
+									"type": "Expression"
+								},
+								"sourceFileSystem": {
+									"value": "@variables('rawFileSystem')",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@variables('curatedFileSystem')",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@variables('curatedFolderPath')",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@variables('logsFileSystem')",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "CuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "RawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@variables('kustoDatabase')",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@variables('kustoTable')",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@variables('logsFileSystem')",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"rawSourceFolderPath": {
+						"type": "string"
+					},
+					"rawSourceFileName": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"rawFileSystem": {
+						"type": "String",
+						"defaultValue": "raw"
+					},
+					"curatedFileSystem": {
+						"type": "String",
+						"defaultValue": "curated"
+					},
+					"logsFileSystem": {
+						"type": "String",
+						"defaultValue": "logs"
+					},
+					"curatedFolderPath": {
+						"type": "String",
+						"defaultValue": "iptv"
+					},
+					"logsFolderPath": {
+						"type": "String",
+						"defaultValue": "iptv"
+					},
+					"kustoDatabase": {
+						"type": "String",
+						"defaultValue": "operationaldb"
+					},
+					"kustoTable": {
+						"type": "String",
+						"defaultValue": "iptv_raw"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/IptvRawToCurated')]",
+				"[concat(variables('factoryId'), '/pipelines/IptvCuratedToKusto')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Pipeline to move IPTV data from Raw to curated",
+				"activities": [
+					{
+						"name": "DataflowRawToCurated",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "IptvRawToCurated",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sourceFileName": {
+										"value": "'@{pipeline().parameters.sourceFileName}'",
+										"type": "Expression"
+									},
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sinkFileSystem": {
+										"value": "'@{pipeline().parameters.sinkFileSystem}'",
+										"type": "Expression"
+									},
+									"sinkFolderPath": {
+										"value": "'@{pipeline().parameters.sinkFolderPath}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"AzureDataLakeSink": {}
+								}
+							},
+							"staging": {},
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowRawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkFileSystem",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkFileSystem"
+									}
+								},
+								{
+									"key": "sinkFolderPath",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkFolderPath"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sourceFileName": {
+						"type": "string"
+					},
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sinkFileSystem": {
+						"type": "string"
+					},
+					"sinkFolderPath": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -461,6 +893,334 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TestIptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestIptvCuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@pipeline().parameters.sinkTable",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkDatabase",
+						"description": "Get Pipeline Variable \"sinkDatabase\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkDatabase",
+							"value": {
+								"value": "@string(activity('TestIptvCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkDatabase",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Database Name Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"sinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "string",
+						"defaultValue": "iptv_raw"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"expectedSinkTable": {
+						"type": "string",
+						"defaultValue": "iptv_raw"
+					}
+				},
+				"variables": {
+					"sinkDatabase": {
+						"type": "String"
+					},
+					"sinkTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/IptvCuratedToKusto')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestIptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestIptvRawToCurated",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvRawToCurated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.sourceFileName",
+									"type": "Expression"
+								},
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@pipeline().parameters.sinkFileSystem",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileSystem",
+						"description": "Get Pipeline Variable \"sinkFileSystem\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvRawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileSystem",
+							"value": {
+								"value": "@string(activity('TestIptvRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"sourceFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					},
+					"sinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"expectedSinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					}
+				},
+				"variables": {
+					"sinkFileSystem": {
+						"type": "String"
+					},
+					"sinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/IptvRawToCurated')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TestOttCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -858,6 +1618,221 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "IPTV"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSink",
+							"description": "Sink dataset in Kusto",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFileSystem as string,",
+						"     sourceFolderPath as string,",
+						"     sinkTable as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          AppVersion as string,",
+						"          Country as string,",
+						"          HappinessScore as float,",
+						"          HwModel as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          StbModel as string,",
+						"          StreamingProtocol as string,",
+						"          Title as string,",
+						"          Topology2 as string,",
+						"          Topology3 as string,",
+						"          Topology4 as string,",
+						"          Topology5 as string,",
+						"          TvModel as string,",
+						"          UserId as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
+						"AzureDataLakeSource sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataflow to copy IPTV data from Raw to Curated",
+				"folder": {
+					"name": "IPTV"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSink",
+							"description": "Sink dataset in Azure Data Lake",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "RenameColumns",
+							"description": "Rename Columns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFolderPath as string,",
+						"     sourceFileName as string,",
+						"     sourceFileSystem as string,",
+						"     sinkFileSystem as string,",
+						"     sinkFolderPath as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          app_version as string,",
+						"          country as string,",
+						"          happiness_score as float,",
+						"          hw_model as string,",
+						"          service as string,",
+						"          service_type as string,",
+						"          stb_model as string,",
+						"          streaming_protocol as string,",
+						"          title as string,",
+						"          topology_2 as string,",
+						"          topology_3 as string,",
+						"          topology_4 as string,",
+						"          topology_5 as string,",
+						"          tv_model as string,",
+						"          user_id as long",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath),",
+						"     fileName: ($sourceFileName),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+						"AzureDataLakeSource select(mapColumn(",
+						"          AppVersion = app_version,",
+						"          Country = country,",
+						"          HappinessScore = happiness_score,",
+						"          HwModel = hw_model,",
+						"          Service = service,",
+						"          ServiceType = service_type,",
+						"          StbModel = stb_model,",
+						"          StreamingProtocol = streaming_protocol,",
+						"          Title = title,",
+						"          Topology2 = topology_2,",
+						"          Topology3 = topology_3,",
+						"          Topology4 = topology_4,",
+						"          Topology5 = topology_5,",
+						"          TvModel = tv_model,",
+						"          UserId = user_id",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+						"RenameColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sinkFileSystem),",
+						"     folderPath: ($sinkFolderPath),",
+						"     mergeSchema: true,",
+						"     autoCompact: true,",
+						"     optimizedWrite: true,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath),",
+						"     partitionBy('key',",
+						"          0,",
+						"          Country",
+						"     )) ~> AzureDataLakeSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
