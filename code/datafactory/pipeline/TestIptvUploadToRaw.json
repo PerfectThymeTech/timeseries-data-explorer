@@ -148,11 +148,75 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "sinkFolderPath",
+					"variableName": "sinkFileName",
 					"value": {
 						"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFileName)",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "IfSinkFolderPath",
+				"description": "",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetPipelineVariableSinkFolderPath",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('sinkFolderPath'), pipeline().parameters.expectedSinkFolderPath)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail_copy1",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Sink File System Returned",
+								"errorCode": "500"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "IfSinkFileName",
+				"description": "",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetPipelineVariableSinkFileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('sinkFileName'), pipeline().parameters.expectedSinkFileName)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail_copy1_copy1",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Sink File System Returned",
+								"errorCode": "500"
+							}
+						}
+					]
 				}
 			}
 		],
