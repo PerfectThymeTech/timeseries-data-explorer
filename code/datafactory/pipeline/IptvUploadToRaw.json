@@ -92,10 +92,6 @@
 							"folderPath": {
 								"value": "@variables('sinkFolderPath')",
 								"type": "Expression"
-							},
-							"fileName": {
-								"value": "@pipeline().parameters.sourceFileName",
-								"type": "Expression"
 							}
 						}
 					}
