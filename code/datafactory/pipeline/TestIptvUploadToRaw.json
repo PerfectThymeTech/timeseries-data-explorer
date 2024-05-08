@@ -1,0 +1,216 @@
+{
+	"name": "TestIptvUploadToRaw",
+	"properties": {
+		"activities": [
+			{
+				"name": "TestIptvUploadToRaw",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "IptvUploadToRaw",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFileSystem": {
+							"value": "@pipeline().parameters.sourceFileSystem",
+							"type": "Expression"
+						},
+						"sourceFolderPath": {
+							"value": "@pipeline().parameters.sourceFolderPath",
+							"type": "Expression"
+						},
+						"sourceFileName": {
+							"value": "@pipeline().parameters.sourceFileName",
+							"type": "Expression"
+						},
+						"sinkFileSystem": {
+							"value": "@pipeline().parameters.sinkFileSystem",
+							"type": "Expression"
+						},
+						"sinkFolderPath": {
+							"value": "@pipeline().parameters.sinkFolderPath",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@pipeline().parameters.logsFileSystem",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@pipeline().parameters.logsFolderPath",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkFileSystem",
+				"description": "Get Pipeline Variable \"sinkFileSystem\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestIptvUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFileSystem",
+					"value": {
+						"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "IfSinkFileSystem",
+				"description": "",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetPipelineVariableSinkFileSystem",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Fail",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Unexpected Sink File System Returned",
+								"errorCode": "500"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkFolderPath",
+				"description": "Get Pipeline Variable \"sinkFolderPath\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestIptvUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFolderPath",
+					"value": {
+						"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "GetPipelineVariableSinkFileName",
+				"description": "Get Pipeline Variable \"sinkFileName\"",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestIptvUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFolderPath",
+					"value": {
+						"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFileName)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string",
+				"defaultValue": "upload-iptv"
+			},
+			"sourceFolderPath": {
+				"type": "string"
+			},
+			"sourceFileName": {
+				"type": "string",
+				"defaultValue": "data.csv"
+			},
+			"sinkFileSystem": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"sinkFolderPath": {
+				"type": "string",
+				"defaultValue": "iptv"
+			},
+			"logsFileSystem": {
+				"type": "string",
+				"defaultValue": "logs"
+			},
+			"logsFolderPath": {
+				"type": "string",
+				"defaultValue": "iptv"
+			},
+			"expectedSinkFileSystem": {
+				"type": "string",
+				"defaultValue": "curated"
+			},
+			"expectedSinkFolderPath": {
+				"type": "string",
+				"defaultValue": "iptv"
+			},
+			"expectedSinkFileName": {
+				"type": "string",
+				"defaultValue": "data.csv"
+			}
+		},
+		"variables": {
+			"sinkFileSystem": {
+				"type": "String"
+			},
+			"sinkFolderPath": {
+				"type": "String"
+			},
+			"sinkFileName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Tests/IPTV"
+		},
+		"annotations": []
+	}
+}
