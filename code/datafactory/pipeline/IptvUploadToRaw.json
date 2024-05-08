@@ -133,6 +133,13 @@
 								"type": "Expression",
 								"content": "@variables('sinkFolderPath')"
 							}
+						},
+						{
+							"key": "sinkFileName",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sourceFileName"
+							}
 						}
 					],
 					"setSystemVariable": true
