@@ -111,7 +111,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "TestIptvUploadToRaw",
+						"activity": "SetVariableExpectedSinkFolderPath",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -170,7 +170,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(variables('sinkFolderPath'), pipeline().parameters.expectedSinkFolderPath)",
+						"value": "@equals(variables('sinkFolderPath'), variables('expectedSinkFolderPath'))",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -218,6 +218,30 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "SetVariableExpectedSinkFolderPath",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TestIptvUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "expectedSinkFolderPath",
+					"value": {
+						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -250,7 +274,7 @@
 			},
 			"expectedSinkFileSystem": {
 				"type": "string",
-				"defaultValue": "curated"
+				"defaultValue": "raw"
 			},
 			"expectedSinkFolderPath": {
 				"type": "string",
@@ -269,6 +293,9 @@
 				"type": "String"
 			},
 			"sinkFileName": {
+				"type": "String"
+			},
+			"expectedSinkFolderPath": {
 				"type": "String"
 			}
 		},
