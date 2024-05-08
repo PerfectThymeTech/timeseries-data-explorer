@@ -6,7 +6,14 @@
 			{
 				"name": "CopyUploadToRaw",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SetVariableSinkFolderPath",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -21,30 +28,132 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
-							"deleteFilesAfterCompletion": false
+							"wildcardFileName": {
+								"value": "@pipeline().parameters.sourceFileName",
+								"type": "Expression"
+							},
+							"deleteFilesAfterCompletion": true
 						},
 						"formatSettings": {
 							"type": "BinaryReadSettings"
 						}
 					},
-					"enableStaging": false
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "FlattenHierarchy"
+						}
+					},
+					"enableStaging": false,
+					"logSettings": {
+						"enableCopyActivityLog": true,
+						"copyActivityLogSettings": {
+							"logLevel": "Warning",
+							"enableReliableLogging": false
+						},
+						"logLocationSettings": {
+							"linkedServiceName": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"path": {
+								"value": "@concat(pipeline().parameters.logsFileSystem, '/', pipeline().parameters.logsFolderPath)",
+								"type": "Expression"
+							}
+						}
+					}
 				},
 				"inputs": [
 					{
-						"referenceName": "BinarySource",
+						"referenceName": "Binary",
 						"type": "DatasetReference",
 						"parameters": {
-							"sourceFileSystem": {
+							"fileSystem": {
 								"value": "@pipeline().parameters.sourceFileSystem",
 								"type": "Expression"
 							},
-							"sourceFolderPath": {
+							"folderPath": {
 								"value": "@pipeline().parameters.sourceFolderPath",
 								"type": "Expression"
 							}
 						}
 					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Binary",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileSystem": {
+								"value": "@pipeline().parameters.sinkFileSystem",
+								"type": "Expression"
+							},
+							"folderPath": {
+								"value": "@variables('sinkFolderPath')",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.sourceFileName",
+								"type": "Expression"
+							}
+						}
+					}
 				]
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "CopyUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "sinkFileSystem",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFileSystem"
+							}
+						},
+						{
+							"key": "sinkFolderPath",
+							"value": {
+								"type": "Expression",
+								"content": "@variables('sinkFolderPath')"
+							}
+						}
+					],
+					"setSystemVariable": true
+				}
+			},
+			{
+				"name": "SetVariableSinkFolderPath",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFolderPath",
+					"value": {
+						"value": "@concat(pipeline().GroupId, '/', pipeline().parameters.sinkFolderPath)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -56,6 +165,23 @@
 			},
 			"sourceFileName": {
 				"type": "string"
+			},
+			"sinkFileSystem": {
+				"type": "string"
+			},
+			"sinkFolderPath": {
+				"type": "string"
+			},
+			"logsFileSystem": {
+				"type": "string"
+			},
+			"logsFolderPath": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"sinkFolderPath": {
+				"type": "String"
 			}
 		},
 		"folder": {
