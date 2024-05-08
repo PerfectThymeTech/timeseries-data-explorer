@@ -27,13 +27,8 @@
 						"type": "BinarySource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": {
-								"value": "@pipeline().parameters.sourceFolderPath",
-								"type": "Expression"
-							},
-							"wildcardFileName": {
-								"value": "@pipeline().parameters.sourceFileName",
+							"fileListPath": {
+								"value": "@concat(pipeline().parameters.sourceFolderPath, '/', pipeline().parameters.sourceFileName)",
 								"type": "Expression"
 							},
 							"deleteFilesAfterCompletion": true
@@ -153,7 +148,7 @@
 				"typeProperties": {
 					"variableName": "sinkFolderPath",
 					"value": {
-						"value": "@concat(pipeline().GroupId, '/', pipeline().parameters.sinkFolderPath)",
+						"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
 						"type": "Expression"
 					}
 				}
@@ -184,6 +179,9 @@
 		},
 		"variables": {
 			"sinkFolderPath": {
+				"type": "String"
+			},
+			"expectedSinkFolderPath": {
 				"type": "String"
 			}
 		},
