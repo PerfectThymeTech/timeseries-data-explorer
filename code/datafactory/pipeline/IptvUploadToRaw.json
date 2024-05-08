@@ -28,6 +28,10 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "@pipeline().parameters.sourceFolderPath",
+								"type": "Expression"
+							},
 							"wildcardFileName": {
 								"value": "@pipeline().parameters.sourceFileName",
 								"type": "Expression"
@@ -71,10 +75,6 @@
 						"parameters": {
 							"fileSystem": {
 								"value": "@pipeline().parameters.sourceFileSystem",
-								"type": "Expression"
-							},
-							"folderPath": {
-								"value": "@pipeline().parameters.sourceFolderPath",
 								"type": "Expression"
 							}
 						}

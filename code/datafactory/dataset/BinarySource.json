@@ -8,9 +8,6 @@
 		"parameters": {
 			"fileSystem": {
 				"type": "string"
-			},
-			"folderPath": {
-				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -18,10 +15,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": {
-					"value": "@dataset().folderPath",
-					"type": "Expression"
-				},
 				"fileSystem": {
 					"value": "@dataset().fileSystem",
 					"type": "Expression"
