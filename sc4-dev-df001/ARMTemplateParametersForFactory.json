@@ -20,6 +20,12 @@
 		"IptvUpload_properties_typeProperties_scope": {
 			"value": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		},
+		"OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath": {
+			"value": "@triggerBody().folderPath"
+		},
+		"OttUpload_properties_TestTrigger_parameters_uploadSourceFileName": {
+			"value": "@triggerBody().fileName"
+		},
 		"OttUpload_properties_typeProperties_scope": {
 			"value": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		}

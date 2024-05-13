@@ -27,6 +27,14 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		},
+		"OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"OttUpload_properties_TestTrigger_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
 		"OttUpload_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
@@ -1439,6 +1447,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"eventSubject": {
+						"type": "string"
+					},
+					"eventData": {
+						"type": "object"
+					}
+				},
+				"variables": {
+					"fileSystem": {
+						"type": "String"
+					},
+					"folderPath": {
+						"type": "String"
+					},
+					"fileName": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TestIptvCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2731,7 +2784,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Wait",
+						"name": "Wait1",
 						"type": "Wait",
 						"dependsOn": [],
 						"userProperties": [],
@@ -2742,6 +2795,14 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
 				},
 				"folder": {
 					"name": "Tests"
@@ -2900,7 +2961,10 @@
 							"referenceName": "TestTrigger",
 							"type": "PipelineReference"
 						},
-						"parameters": {}
+						"parameters": {
+							"uploadSourceFolderPath": "[parameters('OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath')]",
+							"uploadSourceFileName": "[parameters('OttUpload_properties_TestTrigger_parameters_uploadSourceFileName')]"
+						}
 					}
 				],
 				"type": "BlobEventsTrigger",
@@ -3363,43 +3427,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ParseBlobTrigger')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Wait1",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 1
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"variables": {
-					"fileSystem": {
-						"type": "String"
-					},
-					"folderPath": {
-						"type": "String"
-					},
-					"fileName": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "Pipelines/General"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
 		}
 	]
 }
