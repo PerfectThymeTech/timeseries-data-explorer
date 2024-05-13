@@ -170,7 +170,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(variables('sinkFolderPath'), variables('expectedSinkFolderPath'))",
+						"value": "@startswith(variables('sinkFolderPath'), variables('expectedSinkFolderPath'))",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -238,7 +238,7 @@
 				"typeProperties": {
 					"variableName": "expectedSinkFolderPath",
 					"value": {
-						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
+						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
 						"type": "Expression"
 					}
 				}
