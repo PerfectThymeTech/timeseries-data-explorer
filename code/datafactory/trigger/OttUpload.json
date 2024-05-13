@@ -6,16 +6,6 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "TestParseBlobTrigger",
-					"type": "PipelineReference"
-				},
-				"parameters": {
-					"uploadSourceFolderPath": "@triggerBody().folderPath",
-					"uploadSourceFileName": "@triggerBody().fileName"
-				}
-			},
-			{
-				"pipelineReference": {
 					"referenceName": "OttMainPipeline",
 					"type": "PipelineReference"
 				},
