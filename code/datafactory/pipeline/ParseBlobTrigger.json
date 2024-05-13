@@ -1,0 +1,137 @@
+{
+	"name": "ParseBlobTrigger",
+	"properties": {
+		"activities": [
+			{
+				"name": "SetFileSystem",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "fileSystem",
+					"value": {
+						"value": "@first(array(split(pipeline().parameters.uploadSourceFolderPath, '/')))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetFolderPath",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "folderPath",
+					"value": {
+						"value": "@join(skip(array(split(pipeline().parameters.uploadSourceFolderPath, '/')), 1), '/')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetFileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "fileName",
+					"value": {
+						"value": "@pipeline().parameters.uploadSourceFileName",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SetFileSystem",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetFolderPath",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetFileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "fileSystem",
+							"value": {
+								"type": "Expression",
+								"content": "@variables('fileSystem')"
+							}
+						},
+						{
+							"key": "folderPath",
+							"value": {
+								"type": "Expression",
+								"content": "@variables('folderPath')"
+							}
+						},
+						{
+							"key": "fileName",
+							"value": {
+								"type": "Expression",
+								"content": "@variables('fileName')"
+							}
+						}
+					],
+					"setSystemVariable": true
+				}
+			}
+		],
+		"parameters": {
+			"uploadSourceFolderPath": {
+				"type": "string"
+			},
+			"uploadSourceFileName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"fileSystem": {
+				"type": "String"
+			},
+			"folderPath": {
+				"type": "String"
+			},
+			"fileName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/General"
+		},
+		"annotations": []
+	}
+}

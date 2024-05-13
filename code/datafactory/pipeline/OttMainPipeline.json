@@ -6,7 +6,14 @@
 			{
 				"name": "RawToCurated",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "UploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"secureInput": false
 				},
@@ -19,15 +26,15 @@
 					"waitOnCompletion": true,
 					"parameters": {
 						"sourceFolderPath": {
-							"value": "@pipeline().parameters.rawSourceFolderPath",
+							"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
 							"type": "Expression"
 						},
 						"sourceFileName": {
-							"value": "@pipeline().parameters.rawSourceFileName",
+							"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileName)",
 							"type": "Expression"
 						},
 						"sourceFileSystem": {
-							"value": "@variables('rawFileSystem')",
+							"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
 							"type": "Expression"
 						},
 						"sinkFileSystem": {
@@ -97,13 +104,92 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "UploadToRaw",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ParseBlobTrigger",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "OttUploadToRaw",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceFileSystem": {
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileSystem)",
+							"type": "Expression"
+						},
+						"sourceFolderPath": {
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.folderPath)",
+							"type": "Expression"
+						},
+						"sourceFileName": {
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileName)",
+							"type": "Expression"
+						},
+						"sinkFileSystem": {
+							"value": "@variables('rawFileSystem')",
+							"type": "Expression"
+						},
+						"sinkFolderPath": {
+							"value": "@variables('rawFolderPath')",
+							"type": "Expression"
+						},
+						"logsFileSystem": {
+							"value": "@variables('logsFileSystem')",
+							"type": "Expression"
+						},
+						"logsFolderPath": {
+							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ParseBlobTrigger",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ParseBlobTrigger",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"uploadSourceFolderPath": {
+							"value": "@pipeline().parameters.uploadSourceFolderPath",
+							"type": "Expression"
+						},
+						"uploadSourceFileName": {
+							"value": "@pipeline().parameters.uploadSourceFileName",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"parameters": {
-			"rawSourceFolderPath": {
+			"uploadSourceFolderPath": {
 				"type": "string"
 			},
-			"rawSourceFileName": {
+			"uploadSourceFileName": {
 				"type": "string"
 			}
 		},
@@ -135,6 +221,14 @@
 			"kustoTable": {
 				"type": "String",
 				"defaultValue": "ott_raw"
+			},
+			"rawFolderPath": {
+				"type": "String",
+				"defaultValue": "ott"
+			},
+			"uploadFileSystem": {
+				"type": "String",
+				"defaultValue": "upload-ott"
 			}
 		},
 		"folder": {

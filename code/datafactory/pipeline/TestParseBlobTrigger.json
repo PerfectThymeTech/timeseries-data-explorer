@@ -1,0 +1,45 @@
+{
+	"name": "TestParseBlobTrigger",
+	"properties": {
+		"activities": [
+			{
+				"name": "ParseBlobTrigger",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ParseBlobTrigger",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"uploadSourceFolderPath": {
+							"value": "@pipeline().parameters.uploadSourceFolderPath",
+							"type": "Expression"
+						},
+						"uploadSourceFileName": {
+							"value": "@pipeline().parameters.uploadSourceFileName",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"uploadSourceFolderPath": {
+				"type": "string"
+			},
+			"uploadSourceFileName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Tests/General"
+		},
+		"annotations": []
+	}
+}

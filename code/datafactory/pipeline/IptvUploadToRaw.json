@@ -1,0 +1,197 @@
+{
+	"name": "IptvUploadToRaw",
+	"properties": {
+		"description": "Pipeline to move IPTV data from Upload to Raw",
+		"activities": [
+			{
+				"name": "CopyUploadToRaw",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "SetVariableSinkFolderPath",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "@pipeline().parameters.sourceFolderPath",
+								"type": "Expression"
+							},
+							"wildcardFileName": {
+								"value": "@pipeline().parameters.sourceFileName",
+								"type": "Expression"
+							},
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"logSettings": {
+						"enableCopyActivityLog": true,
+						"copyActivityLogSettings": {
+							"logLevel": "Warning",
+							"enableReliableLogging": false
+						},
+						"logLocationSettings": {
+							"linkedServiceName": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"path": {
+								"value": "@concat(pipeline().parameters.logsFileSystem, '/', pipeline().parameters.logsFolderPath)",
+								"type": "Expression"
+							}
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "BinarySource",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileSystem": {
+								"value": "@pipeline().parameters.sourceFileSystem",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "BinarySink",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileSystem": {
+								"value": "@pipeline().parameters.sinkFileSystem",
+								"type": "Expression"
+							},
+							"folderPath": {
+								"value": "@variables('sinkFolderPath')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "SetPipelineOutput",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "CopyUploadToRaw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipelineReturnValue",
+					"value": [
+						{
+							"key": "sinkFileSystem",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sinkFileSystem"
+							}
+						},
+						{
+							"key": "sinkFolderPath",
+							"value": {
+								"type": "Expression",
+								"content": "@variables('sinkFolderPath')"
+							}
+						},
+						{
+							"key": "sinkFileName",
+							"value": {
+								"type": "Expression",
+								"content": "@pipeline().parameters.sourceFileName"
+							}
+						}
+					],
+					"setSystemVariable": true
+				}
+			},
+			{
+				"name": "SetVariableSinkFolderPath",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sinkFolderPath",
+					"value": {
+						"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"sourceFileSystem": {
+				"type": "string"
+			},
+			"sourceFolderPath": {
+				"type": "string"
+			},
+			"sourceFileName": {
+				"type": "string"
+			},
+			"sinkFileSystem": {
+				"type": "string"
+			},
+			"sinkFolderPath": {
+				"type": "string"
+			},
+			"logsFileSystem": {
+				"type": "string"
+			},
+			"logsFolderPath": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"sinkFolderPath": {
+				"type": "String"
+			},
+			"expectedSinkFolderPath": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/IPTV"
+		},
+		"annotations": []
+	}
+}
