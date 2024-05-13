@@ -238,7 +238,7 @@
 				"typeProperties": {
 					"variableName": "expectedSinkFolderPath",
 					"value": {
-						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
+						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().RunId)",
 						"type": "Expression"
 					}
 				}
