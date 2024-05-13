@@ -1,0 +1,20 @@
+{
+	"name": "TestTrigger",
+	"properties": {
+		"activities": [
+			{
+				"name": "Wait",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"folder": {
+			"name": "Tests"
+		},
+		"annotations": []
+	}
+}
