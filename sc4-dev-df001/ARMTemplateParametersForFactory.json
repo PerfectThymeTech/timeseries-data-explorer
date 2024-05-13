@@ -16,6 +16,33 @@
 		},
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"value": "${key_vault_uri}"
+		},
+		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
+			"value": "@triggerBody().folderPath"
+		},
+		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFileName": {
+			"value": "@triggerBody().fileName"
+		},
+		"IptvUpload_properties_typeProperties_scope": {
+			"value": "${datalake_id}"
+		},
+		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
+			"value": "@triggerBody().folderPath"
+		},
+		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFileName": {
+			"value": "@triggerBody().fileName"
+		},
+		"OttUpload_properties_typeProperties_scope": {
+			"value": "${datalake_id}"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
+			"value": "@triggerBody().folderPath"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+			"value": "@triggerBody().fileName"
+		},
+		"TestUpload_properties_typeProperties_scope": {
+			"value": "${datalake_id}"
 		}
 	}
 }

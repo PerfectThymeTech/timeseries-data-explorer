@@ -5,6 +5,7 @@ locals {
     data_factory_name              = azurerm_data_factory.data_factory.name
     key_vault_uri                  = azurerm_key_vault.key_vault.vault_uri
     kusto_cluster_uri              = azurerm_kusto_cluster.kusto_cluster.uri
+    datalake_id                    = azurerm_storage_account.storage.id
     datalake_primary_blob_endpoint = azurerm_storage_account.storage.primary_blob_endpoint
     datalake_primary_dfs_endpoint  = azurerm_storage_account.storage.primary_dfs_endpoint
   }
