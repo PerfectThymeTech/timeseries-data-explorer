@@ -1,0 +1,31 @@
+{
+	"name": "ParseBlobTrigger",
+	"properties": {
+		"activities": [
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"variables": {
+			"fileSystem": {
+				"type": "String"
+			},
+			"folderPath": {
+				"type": "String"
+			},
+			"fileName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/General"
+		},
+		"annotations": []
+	}
+}
