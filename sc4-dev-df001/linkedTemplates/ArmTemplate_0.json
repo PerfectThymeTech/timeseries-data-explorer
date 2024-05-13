@@ -155,6 +155,43 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"fileSystem": {
+						"type": "String"
+					},
+					"folderPath": {
+						"type": "String"
+					},
+					"fileName": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -227,7 +264,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Stopped",
+				"runtimeState": "Started",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -1644,222 +1681,6 @@
 				"[concat(variables('factoryId'), '/datasets/BinarySource')]",
 				"[concat(variables('factoryId'), '/datasets/BinarySink')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IptvMainPipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Main Pipeline for IPTV Orchestration",
-				"activities": [
-					{
-						"name": "RawToCurated",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "UploadToRaw",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvRawToCurated",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFolderPath": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
-									"type": "Expression"
-								},
-								"sourceFileName": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileName)",
-									"type": "Expression"
-								},
-								"sourceFileSystem": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
-									"type": "Expression"
-								},
-								"sinkFileSystem": {
-									"value": "@variables('curatedFileSystem')",
-									"type": "Expression"
-								},
-								"sinkFolderPath": {
-									"value": "@variables('curatedFolderPath')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "CuratedToKusto",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "RawToCurated",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvCuratedToKusto",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFileSystem": {
-									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
-									"type": "Expression"
-								},
-								"sourceFolderPath": {
-									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
-									"type": "Expression"
-								},
-								"sinkDatabase": {
-									"value": "@variables('kustoDatabase')",
-									"type": "Expression"
-								},
-								"sinkTable": {
-									"value": "@variables('kustoTable')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "UploadToRaw",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvUploadToRaw",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFileSystem": {
-									"value": "@variables('uploadFileSystem')",
-									"type": "Expression"
-								},
-								"sourceFolderPath": {
-									"value": "@pipeline().parameters.uploadSourceFolderPath",
-									"type": "Expression"
-								},
-								"sourceFileName": {
-									"value": "@pipeline().parameters.uploadSourceFileName",
-									"type": "Expression"
-								},
-								"sinkFileSystem": {
-									"value": "@variables('rawFileSystem')",
-									"type": "Expression"
-								},
-								"sinkFolderPath": {
-									"value": "@variables('rawFolderPath')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"uploadSourceFolderPath": {
-						"type": "string"
-					},
-					"uploadSourceFileName": {
-						"type": "string"
-					}
-				},
-				"variables": {
-					"rawFileSystem": {
-						"type": "String",
-						"defaultValue": "raw"
-					},
-					"curatedFileSystem": {
-						"type": "String",
-						"defaultValue": "curated"
-					},
-					"logsFileSystem": {
-						"type": "String",
-						"defaultValue": "logs"
-					},
-					"curatedFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
-					},
-					"logsFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
-					},
-					"kustoDatabase": {
-						"type": "String",
-						"defaultValue": "operationaldb"
-					},
-					"kustoTable": {
-						"type": "String",
-						"defaultValue": "iptv_raw"
-					},
-					"uploadFileSystem": {
-						"type": "String",
-						"defaultValue": "upload-iptv"
-					},
-					"rawFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
-					}
-				},
-				"folder": {
-					"name": "Pipelines/IPTV"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/IptvRawToCurated')]",
-				"[concat(variables('factoryId'), '/pipelines/IptvCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/pipelines/IptvUploadToRaw')]"
 			]
 		}
 	]
