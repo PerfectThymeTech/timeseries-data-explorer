@@ -1453,12 +1453,110 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Wait1",
-						"type": "Wait",
+						"name": "SetFileSystem",
+						"type": "SetVariable",
 						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"waitTimeInSeconds": 1
+							"variableName": "fileSystem",
+							"value": {
+								"value": "@first(array(split(pipeline().parameters.uploadSourceFolderPath, '/')))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetFolderPath",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "folderPath",
+							"value": {
+								"value": "@join(skip(array(split(pipeline().parameters.uploadSourceFileName, '/')), 1), '/')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetFileName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "fileName",
+							"value": {
+								"value": "@pipeline().parameters.uploadSourceFileName",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "SetFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetFileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "fileSystem",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('fileSystem')"
+									}
+								},
+								{
+									"key": "folderPath",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('folderPath')"
+									}
+								},
+								{
+									"key": "fileName",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('fileName')"
+									}
+								}
+							],
+							"setSystemVariable": true
 						}
 					}
 				],
@@ -1466,11 +1564,11 @@
 					"elapsedTimeMetric": {}
 				},
 				"parameters": {
-					"eventSubject": {
+					"uploadSourceFolderPath": {
 						"type": "string"
 					},
-					"eventData": {
-						"type": "object"
+					"uploadSourceFileName": {
+						"type": "string"
 					}
 				},
 				"variables": {
@@ -2784,12 +2882,29 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Wait1",
-						"type": "Wait",
+						"name": "ParseBlobTrigger",
+						"type": "ExecutePipeline",
 						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"waitTimeInSeconds": 1
+							"pipeline": {
+								"referenceName": "ParseBlobTrigger",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"uploadSourceFolderPath": {
+									"value": "@pipeline().parameters.uploadSourceFolderPath",
+									"type": "Expression"
+								},
+								"uploadSourceFileName": {
+									"value": "@pipeline().parameters.uploadSourceFileName",
+									"type": "Expression"
+								}
+							}
 						}
 					}
 				],
@@ -2809,7 +2924,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
