@@ -6,7 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "TestTrigger",
+					"referenceName": "TestParseBlobTrigger",
 					"type": "PipelineReference"
 				},
 				"parameters": {
