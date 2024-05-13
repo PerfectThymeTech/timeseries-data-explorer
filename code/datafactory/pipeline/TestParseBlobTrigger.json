@@ -1,5 +1,5 @@
 {
-	"name": "TestTrigger",
+	"name": "TestParseBlobTrigger",
 	"properties": {
 		"activities": [
 			{
@@ -38,7 +38,7 @@
 			}
 		},
 		"folder": {
-			"name": "Tests"
+			"name": "Tests/General"
 		},
 		"annotations": []
 	}
