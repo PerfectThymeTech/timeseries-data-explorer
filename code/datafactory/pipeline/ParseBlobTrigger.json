@@ -31,7 +31,7 @@
 				"typeProperties": {
 					"variableName": "folderPath",
 					"value": {
-						"value": "@join(skip(array(split(pipeline().parameters.uploadSourceFileName, '/')), 1), '/')",
+						"value": "@join(skip(array(split(pipeline().parameters.uploadSourceFolderPath, '/')), 1), '/')",
 						"type": "Expression"
 					}
 				}
