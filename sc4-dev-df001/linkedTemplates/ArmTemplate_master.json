@@ -23,19 +23,39 @@
 			"type": "string",
 			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
 		},
+		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
 		"IptvUpload_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		},
-		"OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath": {
+		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
 		},
-		"OttUpload_properties_TestTrigger_parameters_uploadSourceFileName": {
+		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFileName": {
 			"type": "string",
 			"defaultValue": "@triggerBody().fileName"
 		},
 		"OttUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"TestUpload_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		},
@@ -78,17 +98,14 @@
 					"AzureKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
 					},
-					"IptvUpload_properties_typeProperties_scope": {
-						"value": "[parameters('IptvUpload_properties_typeProperties_scope')]"
+					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
+						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]"
 					},
-					"OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath": {
-						"value": "[parameters('OttUpload_properties_TestTrigger_parameters_uploadSourceFolderPath')]"
+					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
 					},
-					"OttUpload_properties_TestTrigger_parameters_uploadSourceFileName": {
-						"value": "[parameters('OttUpload_properties_TestTrigger_parameters_uploadSourceFileName')]"
-					},
-					"OttUpload_properties_typeProperties_scope": {
-						"value": "[parameters('OttUpload_properties_typeProperties_scope')]"
+					"TestUpload_properties_typeProperties_scope": {
+						"value": "[parameters('TestUpload_properties_typeProperties_scope')]"
 					}
 				}
 			},
@@ -107,6 +124,24 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
+						"value": "[parameters('IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath')]"
+					},
+					"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFileName": {
+						"value": "[parameters('IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFileName')]"
+					},
+					"IptvUpload_properties_typeProperties_scope": {
+						"value": "[parameters('IptvUpload_properties_typeProperties_scope')]"
+					},
+					"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
+						"value": "[parameters('OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath')]"
+					},
+					"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFileName": {
+						"value": "[parameters('OttUpload_properties_OttMainPipeline_parameters_uploadSourceFileName')]"
+					},
+					"OttUpload_properties_typeProperties_scope": {
+						"value": "[parameters('OttUpload_properties_typeProperties_scope')]"
 					}
 				}
 			},
