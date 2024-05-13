@@ -27,8 +27,13 @@
 						"type": "BinarySource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"fileListPath": {
-								"value": "@if(empty(pipeline().parameters.sourceFolderPath), concat(pipeline().parameters.sourceFileSystem, '/', pipeline().parameters.sourceFileName), concat(pipeline().parameters.sourceFileSystem, '/', pipeline().parameters.sourceFolderPath, '/', pipeline().parameters.sourceFileName))",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "@pipeline().parameters.sourceFolderPath",
+								"type": "Expression"
+							},
+							"wildcardFileName": {
+								"value": "@pipeline().parameters.sourceFileName",
 								"type": "Expression"
 							},
 							"deleteFilesAfterCompletion": true
