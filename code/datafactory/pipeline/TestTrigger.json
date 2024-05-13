@@ -3,12 +3,29 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Wait1",
-				"type": "Wait",
+				"name": "ParseBlobTrigger",
+				"type": "ExecutePipeline",
 				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 1
+					"pipeline": {
+						"referenceName": "ParseBlobTrigger",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"uploadSourceFolderPath": {
+							"value": "@pipeline().parameters.uploadSourceFolderPath",
+							"type": "Expression"
+						},
+						"uploadSourceFileName": {
+							"value": "@pipeline().parameters.uploadSourceFileName",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
