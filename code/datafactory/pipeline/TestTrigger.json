@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Wait",
+				"name": "Wait1",
 				"type": "Wait",
 				"dependsOn": [],
 				"userProperties": [],
@@ -12,6 +12,14 @@
 				}
 			}
 		],
+		"parameters": {
+			"uploadSourceFolderPath": {
+				"type": "string"
+			},
+			"uploadSourceFileName": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "Tests"
 		},
