@@ -108,7 +108,14 @@
 			{
 				"name": "UploadToRaw",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "ParseBlobTrigger",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"secureInput": false
 				},
@@ -121,15 +128,15 @@
 					"waitOnCompletion": true,
 					"parameters": {
 						"sourceFileSystem": {
-							"value": "@variables('uploadFileSystem')",
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileSystem)",
 							"type": "Expression"
 						},
 						"sourceFolderPath": {
-							"value": "@pipeline().parameters.uploadSourceFolderPath",
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.folderPath)",
 							"type": "Expression"
 						},
 						"sourceFileName": {
-							"value": "@pipeline().parameters.uploadSourceFileName",
+							"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileName)",
 							"type": "Expression"
 						},
 						"sinkFileSystem": {
@@ -146,6 +153,32 @@
 						},
 						"logsFolderPath": {
 							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ParseBlobTrigger",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ParseBlobTrigger",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"uploadSourceFolderPath": {
+							"value": "@pipeline().parameters.uploadSourceFolderPath",
+							"type": "Expression"
+						},
+						"uploadSourceFileName": {
+							"value": "@pipeline().parameters.uploadSourceFileName",
 							"type": "Expression"
 						}
 					}
