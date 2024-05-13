@@ -28,7 +28,7 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"fileListPath": {
-								"value": "@if(empty(pipeline().parameters.sourceFolderPath), pipeline().parameters.sourceFileName,concat(pipeline().parameters.sourceFolderPath, '/', pipeline().parameters.sourceFileName))",
+								"value": "@if(empty(pipeline().parameters.sourceFolderPath), concat(pipeline().parameters.sourceFileSystem, '/', pipeline().parameters.sourceFileName), concat(pipeline().parameters.sourceFileSystem, '/', pipeline().parameters.sourceFolderPath, '/', pipeline().parameters.sourceFileName))",
 								"type": "Expression"
 							},
 							"deleteFilesAfterCompletion": true
