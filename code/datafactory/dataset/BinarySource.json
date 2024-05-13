@@ -8,6 +8,12 @@
 		"parameters": {
 			"fileSystem": {
 				"type": "string"
+			},
+			"folderPath": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
