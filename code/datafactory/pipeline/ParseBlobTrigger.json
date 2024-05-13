@@ -12,6 +12,14 @@
 				}
 			}
 		],
+		"parameters": {
+			"eventSubject": {
+				"type": "string"
+			},
+			"eventData": {
+				"type": "object"
+			}
+		},
 		"variables": {
 			"fileSystem": {
 				"type": "String"
