@@ -93,7 +93,7 @@
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Fail",
+							"name": "FailSinkFileSystem",
 							"type": "Fail",
 							"dependsOn": [],
 							"userProperties": [],
@@ -175,7 +175,7 @@
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Fail_copy1",
+							"name": "FailSinkFolderPath",
 							"type": "Fail",
 							"dependsOn": [],
 							"userProperties": [],
@@ -207,7 +207,7 @@
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Fail_copy1_copy1",
+							"name": "FailSinkFileName",
 							"type": "Fail",
 							"dependsOn": [],
 							"userProperties": [],
@@ -238,7 +238,7 @@
 				"typeProperties": {
 					"variableName": "expectedSinkFolderPath",
 					"value": {
-						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().RunId)",
+						"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 						"type": "Expression"
 					}
 				}
