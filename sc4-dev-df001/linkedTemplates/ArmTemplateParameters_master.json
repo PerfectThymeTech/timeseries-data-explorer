@@ -17,6 +17,12 @@
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://sc4-dev-vault001.vault.azure.net/"
 		},
+		"IptvUpload_properties_typeProperties_scope": {
+			"value": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+		},
+		"OttUpload_properties_typeProperties_scope": {
+			"value": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+		},
 		"containerUri": {
 			"value": ""
 		},

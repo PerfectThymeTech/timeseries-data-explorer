@@ -23,6 +23,14 @@
 			"type": "string",
 			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
 		},
+		"IptvUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+		},
+		"OttUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -61,10 +69,36 @@
 					},
 					"AzureKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"IptvUpload_properties_typeProperties_scope": {
+						"value": "[parameters('IptvUpload_properties_typeProperties_scope')]"
+					},
+					"OttUpload_properties_typeProperties_scope": {
+						"value": "[parameters('OttUpload_properties_typeProperties_scope')]"
 					}
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "sc4-dev-df001_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'sc4-dev-df001_ArmTemplate_0')]"
+			]
 		}
 	]
 }

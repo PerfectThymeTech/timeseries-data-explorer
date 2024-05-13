@@ -1,0 +1,1502 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "sc4-dev-df001"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/OttMainPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Main Pipeline for OTT Orchestration",
+				"activities": [
+					{
+						"name": "RawToCurated",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "UploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttRawToCurated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFolderPath": {
+									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileName)",
+									"type": "Expression"
+								},
+								"sourceFileSystem": {
+									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@variables('curatedFileSystem')",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@variables('curatedFolderPath')",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@variables('logsFileSystem')",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "CuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "RawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@variables('kustoDatabase')",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@variables('kustoTable')",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@variables('logsFileSystem')",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "UploadToRaw",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttUploadToRaw",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@variables('uploadFileSystem')",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.uploadSourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.uploadSourceFileName",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@variables('rawFileSystem')",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@variables('rawFolderPath')",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@variables('logsFileSystem')",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"rawFileSystem": {
+						"type": "String",
+						"defaultValue": "raw"
+					},
+					"curatedFileSystem": {
+						"type": "String",
+						"defaultValue": "curated"
+					},
+					"logsFileSystem": {
+						"type": "String",
+						"defaultValue": "logs"
+					},
+					"curatedFolderPath": {
+						"type": "String",
+						"defaultValue": "ott"
+					},
+					"logsFolderPath": {
+						"type": "String",
+						"defaultValue": "ott"
+					},
+					"kustoDatabase": {
+						"type": "String",
+						"defaultValue": "operationaldb"
+					},
+					"kustoTable": {
+						"type": "String",
+						"defaultValue": "ott_raw"
+					},
+					"rawFolderPath": {
+						"type": "String",
+						"defaultValue": "ott"
+					},
+					"uploadFileSystem": {
+						"type": "String",
+						"defaultValue": "upload-ott"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestIptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestIptvCuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@pipeline().parameters.sinkTable",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkDatabase",
+						"description": "Get Pipeline Variable \"sinkDatabase\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkDatabase",
+							"value": {
+								"value": "@string(activity('TestIptvCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkDatabase",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Database Name Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"sinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "string",
+						"defaultValue": "iptv_raw"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"expectedSinkTable": {
+						"type": "string",
+						"defaultValue": "iptv_raw"
+					}
+				},
+				"variables": {
+					"sinkDatabase": {
+						"type": "String"
+					},
+					"sinkTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestIptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestIptvRawToCurated",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvRawToCurated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.sourceFileName",
+									"type": "Expression"
+								},
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@pipeline().parameters.sinkFileSystem",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileSystem",
+						"description": "Get Pipeline Variable \"sinkFileSystem\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvRawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileSystem",
+							"value": {
+								"value": "@string(activity('TestIptvRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"sourceFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					},
+					"sinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"expectedSinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					}
+				},
+				"variables": {
+					"sinkFileSystem": {
+						"type": "String"
+					},
+					"sinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestIptvUploadToRaw')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestIptvUploadToRaw",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "IptvUploadToRaw",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.sourceFileName",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@pipeline().parameters.sinkFileSystem",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileSystem",
+						"description": "Get Pipeline Variable \"sinkFileSystem\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileSystem",
+							"value": {
+								"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFileSystem",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFolderPath",
+						"description": "Get Pipeline Variable \"sinkFolderPath\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "SetVariableExpectedSinkFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFolderPath",
+							"value": {
+								"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileName",
+						"description": "Get Pipeline Variable \"sinkFileName\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileName",
+							"value": {
+								"value": "@string(activity('TestIptvUploadToRaw').output.pipelineReturnValue.sinkFileName)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFolderPath",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@startswith(variables('sinkFolderPath'), variables('expectedSinkFolderPath'))",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFolderPath",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "IfSinkFileName",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileName'), pipeline().parameters.expectedSinkFileName)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFileName",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "SetVariableExpectedSinkFolderPath",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestIptvUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "expectedSinkFolderPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "upload-iptv"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sourceFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					},
+					"sinkFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"expectedSinkFolderPath": {
+						"type": "string",
+						"defaultValue": "iptv"
+					},
+					"expectedSinkFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					}
+				},
+				"variables": {
+					"sinkFileSystem": {
+						"type": "String"
+					},
+					"sinkFolderPath": {
+						"type": "String"
+					},
+					"sinkFileName": {
+						"type": "String"
+					},
+					"expectedSinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestOttCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestOttCuratedToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttCuratedToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sinkDatabase": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@pipeline().parameters.sinkTable",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkDatabase",
+						"description": "Get Pipeline Variable \"sinkDatabase\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkDatabase",
+							"value": {
+								"value": "@string(activity('TestOttCuratedToKusto').output.pipelineReturnValue.sinkDatabase)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkDatabase",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkDatabase'), pipeline().parameters.expectedSinkDatabase)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Database Name Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"sinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "string",
+						"defaultValue": "ott_raw"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"expectedSinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"expectedSinkTable": {
+						"type": "string",
+						"defaultValue": "ott_raw"
+					}
+				},
+				"variables": {
+					"sinkDatabase": {
+						"type": "String"
+					},
+					"sinkTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestOttRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestOttRawToCurated",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttRawToCurated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.sourceFileName",
+									"type": "Expression"
+								},
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@pipeline().parameters.sinkFileSystem",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileSystem",
+						"description": "Get Pipeline Variable \"sinkFileSystem\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttRawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileSystem",
+							"value": {
+								"value": "@string(activity('TestOttRawToCurated').output.pipelineReturnValue.sinkFileSystem)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"sourceFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"sourceFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					},
+					"sinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"expectedSinkFileSystem": {
+						"type": "string",
+						"defaultValue": "curated"
+					},
+					"expectedSinkFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					}
+				},
+				"variables": {
+					"sinkFileSystem": {
+						"type": "String"
+					},
+					"sinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestOttUploadToRaw')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestOttUploadToRaw",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "OttUploadToRaw",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sourceFileSystem": {
+									"value": "@pipeline().parameters.sourceFileSystem",
+									"type": "Expression"
+								},
+								"sourceFolderPath": {
+									"value": "@pipeline().parameters.sourceFolderPath",
+									"type": "Expression"
+								},
+								"sourceFileName": {
+									"value": "@pipeline().parameters.sourceFileName",
+									"type": "Expression"
+								},
+								"sinkFileSystem": {
+									"value": "@pipeline().parameters.sinkFileSystem",
+									"type": "Expression"
+								},
+								"sinkFolderPath": {
+									"value": "@pipeline().parameters.sinkFolderPath",
+									"type": "Expression"
+								},
+								"logsFileSystem": {
+									"value": "@pipeline().parameters.logsFileSystem",
+									"type": "Expression"
+								},
+								"logsFolderPath": {
+									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileSystem",
+						"description": "Get Pipeline Variable \"sinkFileSystem\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileSystem",
+							"value": {
+								"value": "@string(activity('TestOttUploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFileSystem",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileSystem'), pipeline().parameters.expectedSinkFileSystem)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFileSystem",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFolderPath",
+						"description": "Get Pipeline Variable \"sinkFolderPath\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "SetVariableExpectedSinkFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFolderPath",
+							"value": {
+								"value": "@string(activity('TestOttUploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "GetPipelineVariableSinkFileName",
+						"description": "Get Pipeline Variable \"sinkFileName\"",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFileName",
+							"value": {
+								"value": "@string(activity('TestOttUploadToRaw').output.pipelineReturnValue.sinkFileName)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "IfSinkFolderPath",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@startswith(variables('sinkFolderPath'), variables('expectedSinkFolderPath'))",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFolderPath",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "IfSinkFileName",
+						"description": "",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "GetPipelineVariableSinkFileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('sinkFileName'), pipeline().parameters.expectedSinkFileName)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "FailSinkFileName",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Unexpected Sink File System Returned",
+										"errorCode": "500"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "SetVariableExpectedSinkFolderPath",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TestOttUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "expectedSinkFolderPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string",
+						"defaultValue": "upload-ott"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sourceFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					},
+					"sinkFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"sinkFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"logsFileSystem": {
+						"type": "string",
+						"defaultValue": "logs"
+					},
+					"logsFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"expectedSinkFileSystem": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"expectedSinkFolderPath": {
+						"type": "string",
+						"defaultValue": "ott"
+					},
+					"expectedSinkFileName": {
+						"type": "string",
+						"defaultValue": "data.csv"
+					}
+				},
+				"variables": {
+					"sinkFileSystem": {
+						"type": "String"
+					},
+					"sinkFolderPath": {
+						"type": "String"
+					},
+					"sinkFileName": {
+						"type": "String"
+					},
+					"expectedSinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Tests/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
