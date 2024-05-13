@@ -3,7 +3,18 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Stopped",
-		"pipelines": [],
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "IptvMainPipeline",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"uploadSourceFolderPath": "@triggerBody().folderPath",
+					"uploadSourceFileName": "@triggerBody().fileName"
+				}
+			}
+		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
 			"blobPathBeginsWith": "/upload-iptv/blobs/",
