@@ -13,9 +13,9 @@ data_factory_github_repo = {
   root_folder     = "/code/datafactory"
 }
 data_factory_global_parameters = {
-  testkey = {
-    type  = "String"
-    value = "testvalue"
+  happinessThreshold = {
+    type  = "Float"
+    value = "0.8"
   }
 }
 data_factory_published_content = {
