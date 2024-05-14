@@ -36,7 +36,3 @@
     name: string,
     value: real
 )
-
-.ingest inline into thresholds(
-    happiness, 0.8
-)
