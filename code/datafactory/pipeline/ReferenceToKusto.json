@@ -6,7 +6,14 @@
 				"name": "ReferenceToKusto",
 				"description": "Insert Reference data into Kusto",
 				"type": "AzureDataExplorerCommand",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SetVariableHappinessThreshold",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -17,7 +24,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.ingest inline into ', pipeline().parameters.sinkTable, '| happiness,', pipeline().parameters.happinessThreshold)",
+						"value": "@concat('.ingest inline into ', pipeline().parameters.sinkTable, '| happiness,', variables('happinessThreshold'))",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:10:00"
@@ -32,6 +39,24 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "SetVariableHappinessThreshold",
+				"description": "Set Variable \"happinessThreshold\"",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "happinessThreshold",
+					"value": {
+						"value": "@string(pipeline().globalParameters.happinessThreshold)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -40,9 +65,11 @@
 			},
 			"sinkTable": {
 				"type": "string"
-			},
+			}
+		},
+		"variables": {
 			"happinessThreshold": {
-				"type": "string"
+				"type": "String"
 			}
 		},
 		"folder": {

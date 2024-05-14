@@ -15,7 +15,17 @@
 						"referenceName": "ReferenceToKusto",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"sinkDatabase": {
+							"value": "@variables('sinkDatabase')",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@variables('sinkTable')",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
