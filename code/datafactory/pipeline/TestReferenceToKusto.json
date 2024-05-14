@@ -1,0 +1,47 @@
+{
+	"name": "TestReferenceToKusto",
+	"properties": {
+		"activities": [
+			{
+				"name": "TestReferenceToKusto",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ReferenceToKusto",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sinkDatabase": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						},
+						"sinkTable": {
+							"value": "@pipeline().parameters.sinkTable",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"sinkDatabase": {
+				"type": "string",
+				"defaultValue": "operationaldb"
+			},
+			"sinkTable": {
+				"type": "string",
+				"defaultValue": "thresholds"
+			}
+		},
+		"folder": {
+			"name": "Tests/Reference"
+		},
+		"annotations": []
+	}
+}
