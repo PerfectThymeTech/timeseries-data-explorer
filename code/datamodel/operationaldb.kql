@@ -1,4 +1,4 @@
-.create table ott_raw (
+.create-merge table ott_raw (
     Country: string,
     Isp: string,
     CdnNodeHost: string,
@@ -14,7 +14,7 @@
     UserId: string
 )
 
-.create table iptv_raw (
+.create-merge table iptv_raw (
     AppVersion: string,
     Country: string,
     HappinessScore: real,
@@ -32,7 +32,8 @@
     UserId: string
 )
 
-.create table thresholds (
+.create-merge table thresholds (
     name: string,
-    value: real
+    value: real,
+    timestamp: datetime
 )
