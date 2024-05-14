@@ -1,0 +1,37 @@
+{
+	"name": "ReferenceMainPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "ReferenceToKusto",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ReferenceToKusto",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"variables": {
+			"sinkDatabase": {
+				"type": "String",
+				"defaultValue": "operationaldb"
+			},
+			"sinkTable": {
+				"type": "String",
+				"defaultValue": "thresholds"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/ReferenceData"
+		},
+		"annotations": []
+	}
+}
