@@ -24,7 +24,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"happiness\", value = ', variables('happinessThreshold'), ', timestamp = now()')",
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"happiness\", value = real(', variables('happinessThreshold'), '), timestamp = now()')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:10:00"
@@ -116,7 +116,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"movingWindowInMinutes\", value = ', variables('movingWindowInMinutes'), ', timestamp = now()')",
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"movingWindowInMinutes\", value = real(', variables('movingWindowInMinutes'), '), timestamp = now()')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:10:00"
@@ -154,7 +154,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumNumberOfUsersPerWindow\", value = ', variables('minimumNumberOfUsersPerWindow'), ', timestamp = now()')",
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumNumberOfUsersPerWindow\", value = real(', variables('minimumNumberOfUsersPerWindow'), '), timestamp = now()')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:10:00"
