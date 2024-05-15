@@ -302,6 +302,8 @@
 		"folder": {
 			"name": "Tests/OTT"
 		},
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2024-05-13T09:36:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }

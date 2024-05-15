@@ -132,6 +132,8 @@
 		"folder": {
 			"name": "Pipelines/General"
 		},
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2024-05-13T10:09:38Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }

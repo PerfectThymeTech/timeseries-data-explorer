@@ -1,0 +1,10 @@
+{
+	"name": "AzureDataExplorer",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-dataeng-rg/providers/Microsoft.Kusto/clusters/sc4-dev-kusto001",
+		"groupId": "cluster",
+		"fqdns": [
+			"sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
+		]
+	}
+}

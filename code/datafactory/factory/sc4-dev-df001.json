@@ -3,10 +3,15 @@
 	"properties": {
 		"globalParameters": {
 			"happinessThreshold": {
-				"type": "float",
+				"type": "Float",
 				"value": 0.8
 			}
 		}
 	},
-	"location": "germanywestcentral"
+	"location": "germanywestcentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "03d9252a-4eab-43d3-980e-ed201b7df1fa",
+		"tenantId": "572cf1ec-3f90-49a2-896f-ab2fa36ca0d3"
+	}
 }

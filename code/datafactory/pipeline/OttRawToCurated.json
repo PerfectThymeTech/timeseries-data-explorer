@@ -121,6 +121,8 @@
 		"folder": {
 			"name": "Pipelines/OTT"
 		},
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2024-04-24T21:50:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }

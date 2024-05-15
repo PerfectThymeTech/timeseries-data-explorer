@@ -1,5 +1,6 @@
 {
 	"name": "AzureDataExplorer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"description": "Azure Data Explorer",
 		"parameters": {

@@ -234,6 +234,8 @@
 		"folder": {
 			"name": "Pipelines/IPTV"
 		},
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2024-05-13T10:27:50Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }
