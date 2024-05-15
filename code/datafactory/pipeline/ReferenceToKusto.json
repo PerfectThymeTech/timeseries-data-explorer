@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ReferenceToKusto",
+				"name": "ReferenceHappinessToKusto",
 				"description": "Insert Reference data into Kusto",
 				"type": "AzureDataExplorerCommand",
 				"dependsOn": [
@@ -57,6 +57,24 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "SetVariableMovingWindowInMinutes",
+				"description": "Set Variable \"movingWindowInMinutes\"",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "movingWindowInMinutes",
+					"value": {
+						"value": "@string(pipeline().globalParameters.happinessThreshold)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -69,6 +87,9 @@
 		},
 		"variables": {
 			"happinessThreshold": {
+				"type": "String"
+			},
+			"movingWindowInMinutes": {
 				"type": "String"
 			}
 		},
