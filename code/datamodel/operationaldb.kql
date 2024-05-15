@@ -78,6 +78,13 @@
         timestamp: datetime
     )
 
+// Create update policies
+.alter-merge table ott_happiness policy update
+@'[{ "IsEnabled": true, "Source": "ott_raw", "Query": "OttGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+
+.alter-merge table iptv_happiness policy update
+@'[{ "IsEnabled": true, "Source": "iptv_raw", "Query": "IptvGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+
 // Create function
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
     iptv_raw
@@ -108,19 +115,17 @@
         NumberOfUsers = count_distinct(UserId),
         Timestamp = now()
         by
-        AppVersion,
         Country,
-        HwModel,
-        Service,
-        ServiceType,
-        StbModel,
-        StreamingProtocol,
+        Isp,
+        CdnNodeHost,
+        Type,
         Title,
-        Topology2,
-        Topology3,
-        Topology4,
-        Topology5,
-        TvModel
+        SelectedQuality,
+        DeviceType,
+        Version,
+        Connection,
+        CommercilizationType,
+        DeviceVendor
 }
 
 .create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
