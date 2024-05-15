@@ -21,6 +21,10 @@ data_factory_global_parameters = {
     type  = "Float"
     value = "30.0"
   }
+  minimumNumberOfUsersPerWindow = {
+    type  = "Float"
+    value = "10.0"
+  }
 }
 data_factory_published_content = {
   # parameters_file = "../sample/ARMTemplateParametersForFactory.json"

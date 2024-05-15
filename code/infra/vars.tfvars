@@ -11,6 +11,14 @@ data_factory_global_parameters = {
     type  = "Float"
     value = "0.8"
   }
+  movingWindowInMinutes = {
+    type  = "Float"
+    value = "30.0"
+  }
+  minimumNumberOfUsersPerWindow = {
+    type  = "Float"
+    value = "10.0"
+  }
 }
 data_factory_published_content = {
   parameters_file = "../../sc4-dev-df001/ARMTemplateParametersForFactory.json"
