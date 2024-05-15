@@ -9,6 +9,10 @@
 			"movingWindowInMinutes": {
 				"type": "float",
 				"value": 30
+			},
+			"minimumNumberOfUsersPerWindow": {
+				"type": "float",
+				"value": 10
 			}
 		}
 	},
