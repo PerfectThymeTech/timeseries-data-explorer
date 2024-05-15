@@ -78,13 +78,6 @@
         timestamp: datetime
     )
 
-// Create update policies
-.alter-merge table ott_happiness policy update
-@'[{ "IsEnabled": true, "Source": "ott_raw", "Query": "OttGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
-
-.alter-merge table iptv_happiness policy update
-@'[{ "IsEnabled": true, "Source": "iptv_raw", "Query": "IptvGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
-
 // Create function
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
     iptv_raw
@@ -137,3 +130,10 @@
         | summarize max(value)
     )
 }
+
+// Create update policies
+.alter-merge table ott_happiness policy update
+@'[{ "IsEnabled": true, "Source": "ott_raw", "Query": "OttGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+
+.alter-merge table iptv_happiness policy update
+@'[{ "IsEnabled": true, "Source": "iptv_raw", "Query": "IptvGetAvgHappinessScore()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
