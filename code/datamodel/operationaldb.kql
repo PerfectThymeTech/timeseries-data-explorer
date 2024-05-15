@@ -78,6 +78,47 @@
         timestamp: datetime
     )
 
+// Create materalized view
+.create async ifnotexists materialized-view with (backfill=true, docString='IPTV Happiness Score Average', folder='iptv') iptv_happiness_mv on table iptv_raw {
+    iptv_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = dcount(UserId)
+        by
+        AppVersion,
+        Country,
+        HwModel,
+        Service,
+        ServiceType,
+        StbModel,
+        StreamingProtocol,
+        Title,
+        Topology2,
+        Topology3,
+        Topology4,
+        Topology5,
+        TvModel
+}
+
+.create async ifnotexists materialized-view with (backfill=true, docString='OTT Happiness Score Average', folder='ott') ott_happiness_mv on table ott_raw {
+    ott_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = dcount(UserId)
+        by
+        Country,
+        Isp,
+        CdnNodeHost,
+        Type,
+        Title,
+        SelectedQuality,
+        DeviceType,
+        Version,
+        Connection,
+        CommercilizationType,
+        DeviceVendor
+}
+
 // Create function
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
     iptv_raw
@@ -131,44 +172,13 @@
     )
 }
 
-
-// Create materalized view
-.create async ifnotexists materialized-view with (backfill=true, docString="IPTV Happiness Score Average", folder="iptv") iptv_happiness_mv on table iptv_raw {
-    iptv_raw
-    | summarize
-        AvgHappinessScore = avg(HappinessScore),
-        NumberOfUsers = dcount(UserId)
-        by
-        AppVersion,
-        Country,
-        HwModel,
-        Service,
-        ServiceType,
-        StbModel,
-        StreamingProtocol,
-        Title,
-        Topology2,
-        Topology3,
-        Topology4,
-        Topology5,
-        TvModel
+// Create views
+.create-or-alter function with (view=true, docstring='View to capture critical iptv items below the happiness threshold', folder='iptv') iptv_happiness_critical_mv {
+    iptv_happiness_mv
+    | where AvgHappinessScore < GetThreshold('happiness') and NumberOfUsers > GetThreshold('minimumNumberOfUsersPerWindow')
 }
 
-.create async ifnotexists materialized-view with (backfill=true, docString="OTT Happiness Score Average", folder="ott") ott_happiness_mv on table ott_raw {
-    ott_raw
-    | summarize
-        AvgHappinessScore = avg(HappinessScore),
-        NumberOfUsers = dcount(UserId)
-        by
-        Country,
-        Isp,
-        CdnNodeHost,
-        Type,
-        Title,
-        SelectedQuality,
-        DeviceType,
-        Version,
-        Connection,
-        CommercilizationType,
-        DeviceVendor
+.create-or-alter function with (view=true, docstring='View to capture critical ott items below the happiness threshold', folder='ott') ott_happiness_critical_mv {
+    ott_happiness_mv
+    | where AvgHappinessScore < GetThreshold('happiness') and NumberOfUsers > GetThreshold('minimumNumberOfUsersPerWindow')
 }
