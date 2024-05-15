@@ -17,6 +17,10 @@ data_factory_global_parameters = {
     type  = "Float"
     value = "0.8"
   }
+  movingWindowInMinutes = {
+    type  = "Float"
+    value = "30.0"
+  }
 }
 data_factory_published_content = {
   # parameters_file = "../sample/ARMTemplateParametersForFactory.json"
