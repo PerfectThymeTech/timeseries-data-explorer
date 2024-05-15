@@ -50,7 +50,7 @@
         AvgHappinessScore: real,
         NumberOfUsers: long,
         Timestamp: datetime
-    )
+    ),
     iptv_happiness(
         AppVersion: string,
         Country: string,
@@ -79,6 +79,50 @@
     )
 
 // Create function
+.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
+    iptv_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = count_distinct(UserId),
+        Timestamp = now()
+        by
+        AppVersion,
+        Country,
+        HwModel,
+        Service,
+        ServiceType,
+        StbModel,
+        StreamingProtocol,
+        Title,
+        Topology2,
+        Topology3,
+        Topology4,
+        Topology5,
+        TvModel
+}
+
+.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore() {
+    ott_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = count_distinct(UserId),
+        Timestamp = now()
+        by
+        AppVersion,
+        Country,
+        HwModel,
+        Service,
+        ServiceType,
+        StbModel,
+        StreamingProtocol,
+        Title,
+        Topology2,
+        Topology3,
+        Topology4,
+        Topology5,
+        TvModel
+}
+
 .create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
     toscalar(
         thresholds
