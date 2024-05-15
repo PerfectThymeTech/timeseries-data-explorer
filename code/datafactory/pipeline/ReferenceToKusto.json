@@ -12,6 +12,18 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "SetVariableMovingWindowInMinutes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetVariableMinimumNumberOfUsersPerWindow",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -100,7 +112,7 @@
 				"type": "AzureDataExplorerCommand",
 				"dependsOn": [
 					{
-						"activity": "SetVariableMovingWindowInMinutes",
+						"activity": "HappinessThresholdToKusto",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -138,7 +150,7 @@
 				"type": "AzureDataExplorerCommand",
 				"dependsOn": [
 					{
-						"activity": "SetVariableMinimumNumberOfUsersPerWindow",
+						"activity": "MovingWindowInMinutesToKusto",
 						"dependencyConditions": [
 							"Succeeded"
 						]
