@@ -15,10 +15,22 @@
 						"referenceName": "KustoIptv",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"kustoDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
+		"variables": {
+			"kustoDatabase": {
+				"type": "String",
+				"defaultValue": "operationaldb"
+			}
+		},
 		"folder": {
 			"name": "Pipelines/Kusto"
 		},
