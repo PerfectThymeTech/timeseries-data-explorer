@@ -42,7 +42,7 @@
     )
 
 // Create materalized view
-.create materialized-view iptv_happiness on table iptv_raw {
+.create materialized-view iptv_happiness_mv on table iptv_raw {
     iptv_raw
     | summarize
         AvgHappinessScore = avg(HappinessScore),
@@ -63,7 +63,7 @@
         TvModel
 }
 
-.create materialized-view iptv_happiness on table ott_raw {
+.create materialized-view iptv_happiness_mv on table ott_raw {
     ott_raw
     | summarize
         AvgHappinessScore = avg(HappinessScore),
