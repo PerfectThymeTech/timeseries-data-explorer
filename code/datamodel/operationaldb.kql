@@ -14,7 +14,7 @@
         DeviceVendor: string,
         HappinessScore: real,
         UserId: string
-    )
+    ),
     iptv_raw(
         AppVersion: string,
         Country: string,
