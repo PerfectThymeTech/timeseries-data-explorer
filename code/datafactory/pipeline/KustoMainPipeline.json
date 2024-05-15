@@ -1,0 +1,27 @@
+{
+	"name": "KustoMainPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "KustoIptv",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "KustoIptv",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Pipelines/Kusto"
+		},
+		"annotations": []
+	}
+}
