@@ -97,15 +97,6 @@
 					},
 					"AzureKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
-					},
-					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
-						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]"
-					},
-					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
-						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
-					},
-					"TestUpload_properties_typeProperties_scope": {
-						"value": "[parameters('TestUpload_properties_typeProperties_scope')]"
 					}
 				}
 			},
@@ -124,6 +115,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
+						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]"
+					},
+					"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+						"value": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
+					},
+					"TestUpload_properties_typeProperties_scope": {
+						"value": "[parameters('TestUpload_properties_typeProperties_scope')]"
 					},
 					"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 						"value": "[parameters('IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath')]"

@@ -1678,6 +1678,279 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ReferenceMainPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ReferenceToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "ReferenceToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sinkDatabase": {
+									"value": "@variables('sinkDatabase')",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@variables('sinkTable')",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"sinkDatabase": {
+						"type": "String",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "String",
+						"defaultValue": "thresholds"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/ReferenceData"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ReferenceToKusto')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ReferenceToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "HappinessThresholdToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "SetVariableHappinessThreshold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMovingWindowInMinutes",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumNumberOfUsersPerWindow",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"happiness\", value = real(', variables('happinessThreshold'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "SetVariableHappinessThreshold",
+						"description": "Set Variable \"happinessThreshold\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "happinessThreshold",
+							"value": {
+								"value": "@string(pipeline().globalParameters.happinessThreshold)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMovingWindowInMinutes",
+						"description": "Set Variable \"movingWindowInMinutes\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "movingWindowInMinutes",
+							"value": {
+								"value": "@string(pipeline().globalParameters.movingWindowInMinutes)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumNumberOfUsersPerWindow",
+						"description": "Set Variable \"minimumNumberOfUsersPerWindow\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumNumberOfUsersPerWindow",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumNumberOfUsersPerWindow)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "MovingWindowInMinutesToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "HappinessThresholdToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"movingWindowInMinutes\", value = real(', variables('movingWindowInMinutes'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MovingWindowInMinutesToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumNumberOfUsersPerWindow\", value = real(', variables('minimumNumberOfUsersPerWindow'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"happinessThreshold": {
+						"type": "String"
+					},
+					"movingWindowInMinutes": {
+						"type": "String"
+					},
+					"minimumNumberOfUsersPerWindow": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/ReferenceData"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TestIptvCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -3017,6 +3290,61 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TestReferenceToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TestReferenceToKusto",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "ReferenceToKusto",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"sinkDatabase": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								},
+								"sinkTable": {
+									"value": "@pipeline().parameters.sinkTable",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sinkDatabase": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					},
+					"sinkTable": {
+						"type": "string",
+						"defaultValue": "thresholds"
+					}
+				},
+				"folder": {
+					"name": "Tests/Reference"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ReferenceToKusto')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3198,6 +3526,70 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/OttMainPipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Reference')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ReferenceMainPipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 12,
+						"startTime": "2024-01-01T00:00:00",
+						"timeZone": "W. Europe Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ReferenceMainPipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "TestParseBlobTrigger",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
+							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/upload-ott/blobs/",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/TestParseBlobTrigger')]"
 			]
 		},
 		{
@@ -3644,40 +4036,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "TestParseBlobTrigger",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
-							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
-						}
-					}
-				],
-				"type": "BlobEventsTrigger",
-				"typeProperties": {
-					"blobPathBeginsWith": "/upload-ott/blobs/",
-					"blobPathEndsWith": ".csv",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
-					"events": [
-						"Microsoft.Storage.BlobCreated"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/TestParseBlobTrigger')]"
 			]
 		}
 	]
