@@ -22,18 +22,6 @@
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
-		},
-		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
-			"type": "string",
-			"defaultValue": "@triggerBody().folderPath"
-		},
-		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
-			"type": "string",
-			"defaultValue": "@triggerBody().fileName"
-		},
-		"TestUpload_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		}
 	},
 	"variables": {
@@ -253,6 +241,224 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ReferenceToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "HappinessThresholdToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "SetVariableHappinessThreshold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMovingWindowInMinutes",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumNumberOfUsersPerWindow",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"happiness\", value = real(', variables('happinessThreshold'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "SetVariableHappinessThreshold",
+						"description": "Set Variable \"happinessThreshold\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "happinessThreshold",
+							"value": {
+								"value": "@string(pipeline().globalParameters.happinessThreshold)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMovingWindowInMinutes",
+						"description": "Set Variable \"movingWindowInMinutes\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "movingWindowInMinutes",
+							"value": {
+								"value": "@string(pipeline().globalParameters.movingWindowInMinutes)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumNumberOfUsersPerWindow",
+						"description": "Set Variable \"minimumNumberOfUsersPerWindow\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumNumberOfUsersPerWindow",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumNumberOfUsersPerWindow)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "MovingWindowInMinutesToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "HappinessThresholdToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"movingWindowInMinutes\", value = real(', variables('movingWindowInMinutes'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MovingWindowInMinutesToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumNumberOfUsersPerWindow\", value = real(', variables('minimumNumberOfUsersPerWindow'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"happinessThreshold": {
+						"type": "String"
+					},
+					"movingWindowInMinutes": {
+						"type": "String"
+					},
+					"minimumNumberOfUsersPerWindow": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/ReferenceData"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
@@ -1769,203 +1975,13 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "TestParseBlobTrigger",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
-							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
-						}
-					}
-				],
-				"type": "BlobEventsTrigger",
-				"typeProperties": {
-					"blobPathBeginsWith": "/upload-ott/blobs/",
-					"blobPathEndsWith": ".csv",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
-					"events": [
-						"Microsoft.Storage.BlobCreated"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/TestParseBlobTrigger')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IptvMainPipeline')]",
+			"name": "[concat(parameters('factoryName'), '/ReferenceMainPipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Main Pipeline for IPTV Orchestration",
 				"activities": [
 					{
-						"name": "RawToCurated",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "UploadToRaw",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvRawToCurated",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFolderPath": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFolderPath)",
-									"type": "Expression"
-								},
-								"sourceFileName": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileName)",
-									"type": "Expression"
-								},
-								"sourceFileSystem": {
-									"value": "@string(activity('UploadToRaw').output.pipelineReturnValue.sinkFileSystem)",
-									"type": "Expression"
-								},
-								"sinkFileSystem": {
-									"value": "@variables('curatedFileSystem')",
-									"type": "Expression"
-								},
-								"sinkFolderPath": {
-									"value": "@variables('curatedFolderPath')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "CuratedToKusto",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "RawToCurated",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvCuratedToKusto",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFileSystem": {
-									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFileSystem)",
-									"type": "Expression"
-								},
-								"sourceFolderPath": {
-									"value": "@string(activity('RawToCurated').output.pipelineReturnValue.sinkFolderPath)",
-									"type": "Expression"
-								},
-								"sinkDatabase": {
-									"value": "@variables('kustoDatabase')",
-									"type": "Expression"
-								},
-								"sinkTable": {
-									"value": "@variables('kustoTable')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "UploadToRaw",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "ParseBlobTrigger",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IptvUploadToRaw",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"sourceFileSystem": {
-									"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileSystem)",
-									"type": "Expression"
-								},
-								"sourceFolderPath": {
-									"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.folderPath)",
-									"type": "Expression"
-								},
-								"sourceFileName": {
-									"value": "@string(activity('ParseBlobTrigger').output.pipelineReturnValue.fileName)",
-									"type": "Expression"
-								},
-								"sinkFileSystem": {
-									"value": "@variables('rawFileSystem')",
-									"type": "Expression"
-								},
-								"sinkFolderPath": {
-									"value": "@variables('rawFolderPath')",
-									"type": "Expression"
-								},
-								"logsFileSystem": {
-									"value": "@variables('logsFileSystem')",
-									"type": "Expression"
-								},
-								"logsFolderPath": {
-									"value": "@variables('logsFolderPath')",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "ParseBlobTrigger",
+						"name": "ReferenceToKusto",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
 						"policy": {
@@ -1974,17 +1990,17 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "ParseBlobTrigger",
+								"referenceName": "ReferenceToKusto",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
 							"parameters": {
-								"uploadSourceFolderPath": {
-									"value": "@pipeline().parameters.uploadSourceFolderPath",
+								"sinkDatabase": {
+									"value": "@variables('sinkDatabase')",
 									"type": "Expression"
 								},
-								"uploadSourceFileName": {
-									"value": "@pipeline().parameters.uploadSourceFileName",
+								"sinkTable": {
+									"value": "@variables('sinkTable')",
 									"type": "Expression"
 								}
 							}
@@ -1994,62 +2010,23 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"parameters": {
-					"uploadSourceFolderPath": {
-						"type": "string"
-					},
-					"uploadSourceFileName": {
-						"type": "string"
-					}
-				},
 				"variables": {
-					"rawFileSystem": {
-						"type": "String",
-						"defaultValue": "raw"
-					},
-					"curatedFileSystem": {
-						"type": "String",
-						"defaultValue": "curated"
-					},
-					"logsFileSystem": {
-						"type": "String",
-						"defaultValue": "logs"
-					},
-					"curatedFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
-					},
-					"logsFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
-					},
-					"kustoDatabase": {
+					"sinkDatabase": {
 						"type": "String",
 						"defaultValue": "operationaldb"
 					},
-					"kustoTable": {
+					"sinkTable": {
 						"type": "String",
-						"defaultValue": "iptv_raw"
-					},
-					"uploadFileSystem": {
-						"type": "String",
-						"defaultValue": "upload-iptv"
-					},
-					"rawFolderPath": {
-						"type": "String",
-						"defaultValue": "iptv"
+						"defaultValue": "thresholds"
 					}
 				},
 				"folder": {
-					"name": "Pipelines/IPTV"
+					"name": "Pipelines/ReferenceData"
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/IptvRawToCurated')]",
-				"[concat(variables('factoryId'), '/pipelines/IptvCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/pipelines/IptvUploadToRaw')]",
-				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
+				"[concat(variables('factoryId'), '/pipelines/ReferenceToKusto')]"
 			]
 		}
 	]
