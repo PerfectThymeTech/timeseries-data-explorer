@@ -25,6 +25,14 @@ data_factory_published_content = {
   template_file   = "../../sc4-dev-df001/ARMTemplateForFactory.json"
 }
 data_factory_published_content_template_variables = {}
+data_factory_triggers_start = [
+  "IptvUpload",
+  "OttUpload",
+  "Reference"
+]
+data_factory_pipelines_run = [
+  "ReferenceMainPipeline"
+]
 kusto_cluster_sku = {
   name     = "Standard_E2ads_v5",
   capacity = 2

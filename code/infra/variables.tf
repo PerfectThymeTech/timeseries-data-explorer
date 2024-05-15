@@ -104,6 +104,20 @@ variable "data_factory_published_content_template_variables" {
   default     = {}
 }
 
+variable "data_factory_triggers_start" {
+  description = "Specifies the list of trigger names that should be started after the deployment."
+  type        = list(string)
+  sensitive   = false
+  default     = []
+}
+
+variable "data_factory_pipelines_run" {
+  description = "Specifies the list of pipeline names that should be started after the deployment."
+  type        = list(string)
+  sensitive   = false
+  default     = []
+}
+
 variable "kusto_cluster_sku" {
   description = "Specifies the kusto cluster sku name."
   type = object({
