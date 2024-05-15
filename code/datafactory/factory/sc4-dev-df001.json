@@ -1,0 +1,20 @@
+{
+	"name": "sc4-dev-df001",
+	"properties": {
+		"globalParameters": {
+			"happinessThreshold": {
+				"type": "float",
+				"value": 0.8
+			},
+			"movingWindowInMinutes": {
+				"type": "float",
+				"value": 30
+			},
+			"minimumNumberOfUsersPerWindow": {
+				"type": "float",
+				"value": 10
+			}
+		}
+	},
+	"location": "germanywestcentral"
+}
