@@ -1,1 +1,1 @@
-# timeseries-data-explorer
+# Timeseries Data Explorer
