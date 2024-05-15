@@ -1,39 +1,42 @@
-.create-merge table ott_raw (
-    Country: string,
-    Isp: string,
-    CdnNodeHost: string,
-    Type: string,
-    Title: string,
-    SelectedQuality: string,
-    DeviceType: string,
-    Version: string,
-    Connection: string,
-    CommercilizationType: string,
-    DeviceVendor: string,
-    HappinessScore: real,
-    UserId: string
-)
+// Create raw tables 
+.create-merge tables
+    ott_raw(
+        Country: string,
+        Isp: string,
+        CdnNodeHost: string,
+        Type: string,
+        Title: string,
+        SelectedQuality: string,
+        DeviceType: string,
+        Version: string,
+        Connection: string,
+        CommercilizationType: string,
+        DeviceVendor: string,
+        HappinessScore: real,
+        UserId: string
+    )
+    iptv_raw(
+        AppVersion: string,
+        Country: string,
+        HappinessScore: real,
+        HwModel: string,
+        Service: string,
+        ServiceType: string,
+        StbModel: string,
+        StreamingProtocol: string,
+        Title: string,
+        Topology2: string,
+        Topology3: string,
+        Topology4: string,
+        Topology5: string,
+        TvModel: string,
+        UserId: string
+    )
 
-.create-merge table iptv_raw (
-    AppVersion: string,
-    Country: string,
-    HappinessScore: real,
-    HwModel: string,
-    Service: string,
-    ServiceType: string,
-    StbModel: string,
-    StreamingProtocol: string,
-    Title: string,
-    Topology2: string,
-    Topology3: string,
-    Topology4: string,
-    Topology5: string,
-    TvModel: string,
-    UserId: string
-)
-
-.create-merge table thresholds (
-    name: string,
-    value: real,
-    timestamp: datetime
-)
+// Create helper tables
+.create-merge tables
+    thresholds (
+        name: string,
+        value: real,
+        timestamp: datetime
+    )
