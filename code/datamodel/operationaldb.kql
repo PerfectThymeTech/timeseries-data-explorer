@@ -1,4 +1,4 @@
-// Create raw tables 
+// Create raw tables
 .create-merge tables
     ott_raw(
         Country: string,
@@ -40,3 +40,14 @@
         value: real,
         timestamp: datetime
     )
+
+// Create function
+.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
+    toscalar(
+        thresholds
+        | where name == valueName
+        | order by timestamp desc
+        | limit 1
+        | summarize max(value)
+    )
+}
