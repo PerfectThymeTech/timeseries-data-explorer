@@ -35,6 +35,10 @@ resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_datab
   principal_type = "App"
   role           = "Ingestor"
   tenant_id      = data.azurerm_client_config.current.tenant_id
+
+  depends_on = [
+    time_sleep.sleep_kusto_db
+  ]
 }
 
 resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_database_principal_assignment_viewer" {
@@ -49,6 +53,10 @@ resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_datab
   principal_type = "App"
   role           = "Viewer"
   tenant_id      = data.azurerm_client_config.current.tenant_id
+
+  depends_on = [
+    time_sleep.sleep_kusto_db
+  ]
 }
 
 resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_database_principal_assignment_admin" {
@@ -63,4 +71,8 @@ resource "azurerm_kusto_database_principal_assignment" "data_factory_kusto_datab
   principal_type = "App"
   role           = "Admin"
   tenant_id      = data.azurerm_client_config.current.tenant_id
+
+  depends_on = [
+    time_sleep.sleep_kusto_db
+  ]
 }
