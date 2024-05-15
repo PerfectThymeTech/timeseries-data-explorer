@@ -31,6 +31,7 @@ resource "null_resource" "data_factory_pipelines_run" {
   }
 
   depends_on = [
-    azurerm_resource_group_template_deployment.data_factory_content_deployment
+    azurerm_resource_group_template_deployment.data_factory_content_deployment,
+    azurerm_kusto_script.kusto_script,
   ]
 }
