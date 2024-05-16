@@ -39,4 +39,3 @@ terraform plan -var-file="vars.tfvars"
 # Terraform apply
 terraform apply -var-file="vars.tfvars"
 ```
-
