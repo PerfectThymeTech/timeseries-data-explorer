@@ -1,0 +1,77 @@
+{
+	"name": "KustoMainPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "KustoIptv",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "KustoIptv",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"kustoDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						},
+						"iptvHappinessTable": {
+							"value": "@variables('iptvHappinessTable')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "KustoOtt",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "KustoOtt",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"kustoDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						},
+						"ottHappinessTable": {
+							"value": "@variables('ottHappinessTable')",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"variables": {
+			"kustoDatabase": {
+				"type": "String",
+				"defaultValue": "operationaldb"
+			},
+			"iptvHappinessTable": {
+				"type": "String",
+				"defaultValue": "iptv_happiness"
+			},
+			"ottHappinessTable": {
+				"type": "String",
+				"defaultValue": "ott_happiness"
+			}
+		},
+		"folder": {
+			"name": "Pipelines/Kusto"
+		},
+		"annotations": []
+	}
+}
