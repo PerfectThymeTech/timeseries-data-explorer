@@ -35,8 +35,7 @@
 		],
 		"parameters": {
 			"kustoDatabase": {
-				"type": "string",
-				"defaultValue": "operationaldb"
+				"type": "string"
 			}
 		},
 		"folder": {

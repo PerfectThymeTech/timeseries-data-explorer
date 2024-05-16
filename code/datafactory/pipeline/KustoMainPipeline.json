@@ -23,6 +23,28 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "KustoOtt",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "KustoOtt",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"kustoDatabase": {
+							"value": "@variables('kustoDatabase')",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"variables": {
