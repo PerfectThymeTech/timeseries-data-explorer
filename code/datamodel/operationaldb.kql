@@ -133,7 +133,7 @@
         SumNumberOfUsers = sum(NumberOfUsers)
         by
         Timestamp,
-        column_ifexists(columnName, 'Country')
+        column_ifexists(columnName, 'columnName does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
     | project-away SumTotalHappiness, SumNumberOfUsers
 }
@@ -146,8 +146,8 @@
         SumNumberOfUsers = sum(NumberOfUsers)
         by
         Timestamp,
-        column_ifexists(columnName1, 'Country'),
-        column_ifexists(columnName2, 'Isp')
+        column_ifexists(columnName1, 'columnName1 does not exist'),
+        column_ifexists(columnName2, 'columnName2 does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
     | project-away SumTotalHappiness, SumNumberOfUsers
 }
@@ -160,7 +160,7 @@
         SumNumberOfUsers = sum(NumberOfUsers)
         by
         Timestamp,
-        column_ifexists(columnName, 'Country')
+        column_ifexists(columnName, 'columnName does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
     | project-away SumTotalHappiness, SumNumberOfUsers
 }
@@ -173,8 +173,8 @@
         SumNumberOfUsers = sum(NumberOfUsers)
         by
         Timestamp,
-        column_ifexists(columnName1, 'Country'),
-        column_ifexists(columnName2, 'AppVersion')
+        column_ifexists(columnName1, 'columnName1 does not exist'),
+        column_ifexists(columnName2, 'columnName2 does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
     | project-away SumTotalHappiness, SumNumberOfUsers
 }
