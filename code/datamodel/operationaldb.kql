@@ -78,6 +78,67 @@
         timestamp: datetime
     )
 
+// Create function
+.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
+    let currentTimestamp = now();
+    let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
+    iptv_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = count_distinct(UserId),
+        Timestamp = currentTimestamp
+        by
+        AppVersion,
+        Country,
+        HwModel,
+        Service,
+        ServiceType,
+        StbModel,
+        StreamingProtocol,
+        Title,
+        Topology2,
+        Topology3,
+        Topology4,
+        Topology5,
+        TvModel
+}
+
+.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore() {
+    let currentTimestamp = now();
+    let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
+    ott_raw
+    | summarize
+        AvgHappinessScore = avg(HappinessScore),
+        NumberOfUsers = count_distinct(UserId),
+        Timestamp = currentTimestamp
+        by
+        Country,
+        Isp,
+        CdnNodeHost,
+        Type,
+        Title,
+        SelectedQuality,
+        DeviceType,
+        Version,
+        Connection,
+        CommercilizationType,
+        DeviceVendor
+}
+
+.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
+    toscalar(
+        thresholds
+        | where name == valueName
+        | order by timestamp desc
+        | limit 1
+        | summarize max(value)
+    )
+}
+
+////////////////////////////////////////////////
+// Create materialized view and view for testing
+////////////////////////////////////////////////
+
 // Create materalized view
 .create ifnotexists materialized-view with (docString='IPTV Happiness Score Average', folder='iptv') iptv_happiness_mv on table iptv_raw {
     iptv_raw
@@ -117,59 +178,6 @@
         Connection,
         CommercilizationType,
         DeviceVendor
-}
-
-// Create function
-.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
-    iptv_raw
-    | summarize
-        AvgHappinessScore = avg(HappinessScore),
-        NumberOfUsers = count_distinct(UserId),
-        Timestamp = now()
-        by
-        AppVersion,
-        Country,
-        HwModel,
-        Service,
-        ServiceType,
-        StbModel,
-        StreamingProtocol,
-        Title,
-        Topology2,
-        Topology3,
-        Topology4,
-        Topology5,
-        TvModel
-}
-
-.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore() {
-    ott_raw
-    | summarize
-        AvgHappinessScore = avg(HappinessScore),
-        NumberOfUsers = count_distinct(UserId),
-        Timestamp = now()
-        by
-        Country,
-        Isp,
-        CdnNodeHost,
-        Type,
-        Title,
-        SelectedQuality,
-        DeviceType,
-        Version,
-        Connection,
-        CommercilizationType,
-        DeviceVendor
-}
-
-.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
-    toscalar(
-        thresholds
-        | where name == valueName
-        | order by timestamp desc
-        | limit 1
-        | summarize max(value)
-    )
 }
 
 // Create views
