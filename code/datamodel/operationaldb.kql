@@ -135,7 +135,7 @@
         Timestamp,
         column_ifexists(columnName, 'columnName does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
-    | project-away SumTotalHappiness, SumNumberOfUsers
+    | project-away SumTotalHappiness
 }
 
 .create-or-alter function with (docstring = 'Function to get average happiness scores for ott data for two columns', folder='ott') OttGetAvgHappinessScoreForTwoColumns(columnName1: string, columnName2: string) {
@@ -149,7 +149,7 @@
         column_ifexists(columnName1, 'columnName1 does not exist'),
         column_ifexists(columnName2, 'columnName2 does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
-    | project-away SumTotalHappiness, SumNumberOfUsers
+    | project-away SumTotalHappiness
 }
 
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data for one column', folder='iptv') IptvGetAvgHappinessScoreForOneColumn(columnName: string) {
@@ -162,7 +162,7 @@
         Timestamp,
         column_ifexists(columnName, 'columnName does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
-    | project-away SumTotalHappiness, SumNumberOfUsers
+    | project-away SumTotalHappiness
 }
 
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data for two columns', folder='iptv') IptvGetAvgHappinessScoreForTwoColumns(columnName1: string, columnName2: string) {
@@ -176,7 +176,7 @@
         column_ifexists(columnName1, 'columnName1 does not exist'),
         column_ifexists(columnName2, 'columnName2 does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
-    | project-away SumTotalHappiness, SumNumberOfUsers
+    | project-away SumTotalHappiness
 }
 
 .create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
