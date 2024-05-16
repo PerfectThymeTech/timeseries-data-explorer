@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append async iptv_happiness <| IptvGetAvgHappinessScore()')",
+						"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore()')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:20:00"
@@ -36,6 +36,9 @@
 		"parameters": {
 			"kustoDatabase": {
 				"type": "string"
+			},
+			"iptvHappinessTable": {
+				"type": "String"
 			}
 		},
 		"folder": {

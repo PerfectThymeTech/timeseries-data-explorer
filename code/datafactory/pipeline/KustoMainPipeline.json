@@ -20,6 +20,10 @@
 						"kustoDatabase": {
 							"value": "@variables('kustoDatabase')",
 							"type": "Expression"
+						},
+						"iptvHappinessTable": {
+							"value": "@variables('iptvHappinessTable')",
+							"type": "Expression"
 						}
 					}
 				}
@@ -42,6 +46,10 @@
 						"kustoDatabase": {
 							"value": "@variables('kustoDatabase')",
 							"type": "Expression"
+						},
+						"ottHappinessTable": {
+							"value": "@variables('ottHappinessTable')",
+							"type": "Expression"
 						}
 					}
 				}
@@ -51,6 +59,14 @@
 			"kustoDatabase": {
 				"type": "String",
 				"defaultValue": "operationaldb"
+			},
+			"iptvHappinessTable": {
+				"type": "String",
+				"defaultValue": "iptv_happiness"
+			},
+			"ottHappinessTable": {
+				"type": "String",
+				"defaultValue": "ott_happiness"
 			}
 		},
 		"folder": {

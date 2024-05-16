@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append async ott_happiness <| OttGetAvgHappinessScore()')",
+						"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore()')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:20:00"
@@ -36,6 +36,9 @@
 		"parameters": {
 			"kustoDatabase": {
 				"type": "string"
+			},
+			"ottHappinessTable": {
+				"type": "String"
 			}
 		},
 		"folder": {
