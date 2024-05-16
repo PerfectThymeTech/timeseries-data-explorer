@@ -34,7 +34,6 @@ location    = "<your-location>"
 environment = "dev"
 prefix      = "<your-prefix-value>"
 tags        = {}
-
 ...
 ```
 
