@@ -34,7 +34,8 @@ data_factory_published_content_template_variables = {}
 data_factory_triggers_start = [
   "IptvUpload",
   "OttUpload",
-  "Reference"
+  "Reference",
+  "Kusto"
 ]
 data_factory_pipelines_run = [
   "ReferenceMainPipeline"
