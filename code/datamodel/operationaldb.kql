@@ -13,11 +13,13 @@
         CommercilizationType: string,
         DeviceVendor: string,
         HappinessScore: real,
-        UserId: string
+        UserId: string,
+        EndTime: datetime
     ),
     iptv_raw(
         AppVersion: string,
         Country: string,
+        EndTime: datetime,
         HappinessScore: real,
         HwModel: string,
         Service: string,
