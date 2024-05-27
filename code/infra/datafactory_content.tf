@@ -11,6 +11,14 @@ resource "azurerm_resource_group_template_deployment" "data_factory_content_depl
   template_content   = file(var.data_factory_published_content.template_file)
 }
 
+resource "time_sleep" "sleep_data_factory_content_deployment" {
+  create_duration = "60s"
+
+  depends_on = [
+    azurerm_resource_group_template_deployment.data_factory_content_deployment
+  ]
+}
+
 resource "null_resource" "data_factory_triggers_start" {
   for_each = toset(var.data_factory_triggers_start)
 
@@ -19,7 +27,7 @@ resource "null_resource" "data_factory_triggers_start" {
   }
 
   depends_on = [
-    azurerm_resource_group_template_deployment.data_factory_content_deployment
+    time_sleep.sleep_data_factory_content_deployment
   ]
 }
 
@@ -31,7 +39,7 @@ resource "null_resource" "data_factory_pipelines_run" {
   }
 
   depends_on = [
-    azurerm_resource_group_template_deployment.data_factory_content_deployment,
+    time_sleep.sleep_data_factory_content_deployment,
     azurerm_kusto_script.kusto_script,
   ]
 }
