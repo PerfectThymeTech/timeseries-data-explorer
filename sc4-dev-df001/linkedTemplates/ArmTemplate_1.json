@@ -1297,7 +1297,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "iptv"
+						"defaultValue": "iptv/0156490b-efbe-4a27-af08-a237669f91cc"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -1934,7 +1934,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "ott"
+						"defaultValue": "ott/751cb63e-ce65-4f73-9894-6b1bdb8b7e1d"
 					},
 					"sourceFileName": {
 						"type": "string",
