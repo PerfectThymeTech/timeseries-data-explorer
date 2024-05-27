@@ -79,6 +79,16 @@
     )
 
 // Create function
+.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
+    toscalar(
+        thresholds
+        | where name == valueName
+        | order by timestamp desc
+        | limit 1
+        | summarize max(value)
+    )
+}
+
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
     let currentTimestamp = now();
     let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
@@ -177,16 +187,6 @@
         column_ifexists(columnName2, 'columnName2 does not exist')
     | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
     | project-away SumTotalHappiness
-}
-
-.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
-    toscalar(
-        thresholds
-        | where name == valueName
-        | order by timestamp desc
-        | limit 1
-        | summarize max(value)
-    )
 }
 
 ////////////////////////////////////////////////
