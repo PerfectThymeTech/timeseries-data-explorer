@@ -13,11 +13,13 @@
         CommercilizationType: string,
         DeviceVendor: string,
         HappinessScore: real,
-        UserId: string
+        UserId: string,
+        EndTime: datetime
     ),
     iptv_raw(
         AppVersion: string,
         Country: string,
+        EndTime: datetime,
         HappinessScore: real,
         HwModel: string,
         Service: string,
@@ -79,6 +81,16 @@
     )
 
 // Create function
+.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
+    toscalar(
+        thresholds
+        | where name == valueName
+        | order by timestamp desc
+        | limit 1
+        | summarize max(value)
+    )
+}
+
 .create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
     let currentTimestamp = now();
     let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
@@ -125,14 +137,58 @@
         DeviceVendor
 }
 
-.create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
-    toscalar(
-        thresholds
-        | where name == valueName
-        | order by timestamp desc
-        | limit 1
-        | summarize max(value)
-    )
+.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data for one column', folder='ott') OttGetAvgHappinessScoreForOneColumn(columnName: string) {
+    ott_happiness
+    | extend TotalHappiness = NumberOfUsers * AvgHappinessScore
+    | summarize
+        SumTotalHappiness = sum(TotalHappiness),
+        SumNumberOfUsers = sum(NumberOfUsers)
+        by
+        Timestamp,
+        column_ifexists(columnName, 'columnName does not exist')
+    | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
+    | project-away SumTotalHappiness
+}
+
+.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data for two columns', folder='ott') OttGetAvgHappinessScoreForTwoColumns(columnName1: string, columnName2: string) {
+    ott_happiness
+    | extend TotalHappiness = NumberOfUsers * AvgHappinessScore
+    | summarize
+        SumTotalHappiness = sum(TotalHappiness),
+        SumNumberOfUsers = sum(NumberOfUsers)
+        by
+        Timestamp,
+        column_ifexists(columnName1, 'columnName1 does not exist'),
+        column_ifexists(columnName2, 'columnName2 does not exist')
+    | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
+    | project-away SumTotalHappiness
+}
+
+.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data for one column', folder='iptv') IptvGetAvgHappinessScoreForOneColumn(columnName: string) {
+    iptv_happiness
+    | extend TotalHappiness = NumberOfUsers * AvgHappinessScore
+    | summarize
+        SumTotalHappiness = sum(TotalHappiness),
+        SumNumberOfUsers = sum(NumberOfUsers)
+        by
+        Timestamp,
+        column_ifexists(columnName, 'columnName does not exist')
+    | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
+    | project-away SumTotalHappiness
+}
+
+.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data for two columns', folder='iptv') IptvGetAvgHappinessScoreForTwoColumns(columnName1: string, columnName2: string) {
+    iptv_happiness
+    | extend TotalHappiness = NumberOfUsers * AvgHappinessScore
+    | summarize
+        SumTotalHappiness = sum(TotalHappiness),
+        SumNumberOfUsers = sum(NumberOfUsers)
+        by
+        Timestamp,
+        column_ifexists(columnName1, 'columnName1 does not exist'),
+        column_ifexists(columnName2, 'columnName2 does not exist')
+    | extend AvgHappinessScore = SumTotalHappiness / SumNumberOfUsers
+    | project-away SumTotalHappiness
 }
 
 ////////////////////////////////////////////////

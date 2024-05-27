@@ -12,7 +12,7 @@ resource "azurerm_resource_group_template_deployment" "data_factory_content_depl
 }
 
 resource "null_resource" "data_factory_triggers_start" {
-  for_each = toset(var.data_factory_triggers_start)
+  for_each = var.data_factory_published_content.parameters_file != "" && var.data_factory_published_content.template_file != "" ? toset(var.data_factory_triggers_start) : toset([])
 
   provisioner "local-exec" {
     command = "az datafactory trigger start --resource-group ${azurerm_data_factory.data_factory.resource_group_name} --factory-name ${azurerm_data_factory.data_factory.name} --name ${each.value}"
@@ -24,7 +24,7 @@ resource "null_resource" "data_factory_triggers_start" {
 }
 
 resource "null_resource" "data_factory_pipelines_run" {
-  for_each = toset(var.data_factory_pipelines_run)
+  for_each = var.data_factory_published_content.parameters_file != "" && var.data_factory_published_content.template_file != "" ? toset(var.data_factory_pipelines_run) : toset([])
 
   provisioner "local-exec" {
     command = "az datafactory pipeline create-run --resource-group ${azurerm_data_factory.data_factory.resource_group_name} --factory-name ${azurerm_data_factory.data_factory.name} --name ${each.value}"

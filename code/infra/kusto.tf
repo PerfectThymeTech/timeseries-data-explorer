@@ -54,7 +54,7 @@ resource "azurerm_kusto_database" "kusto_database" {
 resource "time_sleep" "sleep_kusto_db" {
   for_each = var.kusto_cluster_databases
 
-  create_duration = "120s"
+  create_duration = "240s"
 }
 
 resource "azurerm_kusto_script" "kusto_script" {
