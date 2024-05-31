@@ -818,6 +818,10 @@
 						{
 							"name": "RenameColumns",
 							"description": "Rename Columns"
+						},
+						{
+							"name": "FilterEmptyHappinessScore",
+							"description": "Filter Empty Happiness Score Rows"
 						}
 					],
 					"scriptLines": [
@@ -880,7 +884,8 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"RenameColumns sink(allowSchemaDrift: true,",
+						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
@@ -1034,6 +1039,10 @@
 						{
 							"name": "RenameColumns",
 							"description": "Rename Columns"
+						},
+						{
+							"name": "FilterEmptyHappinessScore",
+							"description": "Filter Empty Happiness Score Rows"
 						}
 					],
 					"scriptLines": [
@@ -1092,7 +1101,8 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"RenameColumns sink(allowSchemaDrift: true,",
+						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
