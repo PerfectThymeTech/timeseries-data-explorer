@@ -1043,6 +1043,10 @@
 						{
 							"name": "FilterEmptyHappinessScore",
 							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "HarmonizeColumn",
+							"description": "Harmonize columns: Connection, DeviceVendor"
 						}
 					],
 					"scriptLines": [
@@ -1102,7 +1106,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-						"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
+						"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
+						"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
+						"HarmonizeColumn sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
