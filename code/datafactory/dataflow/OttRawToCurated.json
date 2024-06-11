@@ -33,6 +33,9 @@
 			],
 			"transformations": [
 				{
+					"name": "DistinctRows"
+				},
+				{
 					"name": "RenameColumns",
 					"description": "Rename Columns"
 				},
@@ -86,6 +89,8 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+				"RenameColumns aggregate(groupBy(mycols = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> DistinctRows",
 				"AzureDataLakeSource select(mapColumn(",
 				"          Country,",
 				"          Isp = ISP,",
@@ -104,7 +109,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-				"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+				"DistinctRows filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 				"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
 				"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
 				"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
