@@ -3972,6 +3972,9 @@
 						{
 							"name": "FilterEmptyHappinessScore",
 							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "AlterRow"
 						}
 					],
 					"scriptLines": [
@@ -4035,7 +4038,8 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-						"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
@@ -4045,9 +4049,10 @@
 						"     optimizedWrite: true,",
 						"     vacuum: 0,",
 						"     deletable: false,",
-						"     insertable: true,",
+						"     insertable: false,",
 						"     updateable: false,",
-						"     upsertable: false,",
+						"     upsertable: true,",
+						"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','EndTime'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
@@ -4197,6 +4202,9 @@
 						{
 							"name": "HarmonizeColumn",
 							"description": "Harmonize columns: Connection, DeviceVendor"
+						},
+						{
+							"name": "AlterRow"
 						}
 					],
 					"scriptLines": [
@@ -4258,7 +4266,8 @@
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 						"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
 						"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
-						"HarmonizeColumn sink(allowSchemaDrift: true,",
+						"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
@@ -4268,9 +4277,10 @@
 						"     optimizedWrite: true,",
 						"     vacuum: 0,",
 						"     deletable: false,",
-						"     insertable: true,",
+						"     insertable: false,",
 						"     updateable: false,",
-						"     upsertable: false,",
+						"     upsertable: true,",
+						"     keys:['Country','Isp','CdnNodeHost','Type','Title','SelectedQuality','DeviceType','Version','Connection','CommercilizationType','DeviceVendor','UserId','EndTime'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
