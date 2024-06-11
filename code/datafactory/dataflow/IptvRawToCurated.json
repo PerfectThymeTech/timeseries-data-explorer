@@ -119,7 +119,7 @@
 				"     insertable: false,",
 				"     updateable: false,",
 				"     upsertable: true,",
-				"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','UserId'],",
+				"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','EndTime'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
