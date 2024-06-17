@@ -33,12 +33,18 @@
 			],
 			"transformations": [
 				{
+					"name": "DistinctRows"
+				},
+				{
 					"name": "RenameColumns",
 					"description": "Rename Columns"
 				},
 				{
 					"name": "FilterEmptyHappinessScore",
 					"description": "Filter Empty Happiness Score Rows"
+				},
+				{
+					"name": "AlterRow"
 				}
 			],
 			"scriptLines": [
@@ -81,7 +87,9 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-				"AzureDataLakeSource select(mapColumn(",
+				"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+				"DistinctRows select(mapColumn(",
 				"          AppVersion = app_version,",
 				"          Country = country,",
 				"          HappinessScore = happiness_score,",
@@ -97,12 +105,14 @@
 				"          Topology5 = topology_5,",
 				"          TvModel = tv_model,",
 				"          UserId = user_id,",
-				"          EndTime = end_time",
+				"          EndTime = end_time,",
+				"          Hash = hash",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 				"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-				"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
+				"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
 				"     fileSystem: ($sinkFileSystem),",
@@ -112,9 +122,10 @@
 				"     optimizedWrite: true,",
 				"     vacuum: 0,",
 				"     deletable: false,",
-				"     insertable: true,",
+				"     insertable: false,",
 				"     updateable: false,",
-				"     upsertable: false,",
+				"     upsertable: true,",
+				"     keys:['Hash'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
@@ -124,7 +135,7 @@
 				"     assertFailure_fileSystem: ($logsFileSystem),",
 				"     assertFailure_folderPath: ($logsFolderPath),",
 				"     partitionBy('key',",
-				"          0,",
+				"          1,",
 				"          Country",
 				"     )) ~> AzureDataLakeSink"
 			]

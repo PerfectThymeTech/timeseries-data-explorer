@@ -30,7 +30,11 @@
 					}
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "DropColumn"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     sourceFileSystem as string,",
@@ -55,7 +59,8 @@
 				"          Topology5 as string,",
 				"          TvModel as string,",
 				"          UserId as long,",
-				"          EndTime as timestamp",
+				"          EndTime as timestamp,",
+				"          Hash as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -63,7 +68,12 @@
 				"     format: 'delta',",
 				"     fileSystem: ($sourceFileSystem),",
 				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"AzureDataLakeSource select(mapColumn(",
+				"          each(match(name!='Hash'))",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DropColumn",
+				"DropColumn sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",

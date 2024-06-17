@@ -33,6 +33,9 @@
 			],
 			"transformations": [
 				{
+					"name": "DistinctRows"
+				},
+				{
 					"name": "RenameColumns",
 					"description": "Rename Columns"
 				},
@@ -43,6 +46,9 @@
 				{
 					"name": "HarmonizeColumn",
 					"description": "Harmonize columns: Connection, DeviceVendor"
+				},
+				{
+					"name": "AlterRow"
 				}
 			],
 			"scriptLines": [
@@ -83,6 +89,8 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+				"RenameColumns aggregate(groupBy(mycols = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> DistinctRows",
 				"AzureDataLakeSource select(mapColumn(",
 				"          Country,",
 				"          Isp = ISP,",
@@ -101,10 +109,11 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-				"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+				"DistinctRows filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 				"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
 				"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
-				"HarmonizeColumn sink(allowSchemaDrift: true,",
+				"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
+				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
 				"     fileSystem: ($sinkFileSystem),",
@@ -114,9 +123,10 @@
 				"     optimizedWrite: true,",
 				"     vacuum: 0,",
 				"     deletable: false,",
-				"     insertable: true,",
+				"     insertable: false,",
 				"     updateable: false,",
-				"     upsertable: false,",
+				"     upsertable: true,",
+				"     keys:['Country','Isp','CdnNodeHost','Type','Title','SelectedQuality','DeviceType','Version','Connection','CommercilizationType','DeviceVendor','UserId','EndTime'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
