@@ -3930,6 +3930,154 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataflow to copy IPTV data from Raw to Curated",
+				"folder": {
+					"name": "IPTV"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSink",
+							"description": "Sink dataset in Azure Data Lake",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "DistinctRows"
+						},
+						{
+							"name": "RenameColumns",
+							"description": "Rename Columns"
+						},
+						{
+							"name": "FilterEmptyHappinessScore",
+							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "AlterRow"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFolderPath as string,",
+						"     sourceFileName as string,",
+						"     sourceFileSystem as string,",
+						"     sinkFileSystem as string,",
+						"     sinkFolderPath as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          app_version as string,",
+						"          country as string,",
+						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',",
+						"          happiness_score as float,",
+						"          hw_model as string,",
+						"          service as string,",
+						"          service_type as string,",
+						"          stb_model as string,",
+						"          streaming_protocol as string,",
+						"          title as string,",
+						"          topology_2 as string,",
+						"          topology_3 as string,",
+						"          topology_4 as string,",
+						"          topology_5 as string,",
+						"          tv_model as string,",
+						"          user_id as long",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath),",
+						"     fileName: ($sourceFileName),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+						"RenameColumns aggregate(groupBy(hash = sha2(256,columns())),",
+						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+						"AzureDataLakeSource select(mapColumn(",
+						"          AppVersion = app_version,",
+						"          Country = country,",
+						"          HappinessScore = happiness_score,",
+						"          HwModel = hw_model,",
+						"          Service = service,",
+						"          ServiceType = service_type,",
+						"          StbModel = stb_model,",
+						"          StreamingProtocol = streaming_protocol,",
+						"          Title = title,",
+						"          Topology2 = topology_2,",
+						"          Topology3 = topology_3,",
+						"          Topology4 = topology_4,",
+						"          Topology5 = topology_5,",
+						"          TvModel = tv_model,",
+						"          UserId = user_id,",
+						"          EndTime = end_time",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+						"DistinctRows filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sinkFileSystem),",
+						"     folderPath: ($sinkFolderPath),",
+						"     mergeSchema: true,",
+						"     autoCompact: true,",
+						"     optimizedWrite: true,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','EndTime','hash'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath),",
+						"     partitionBy('key',",
+						"          0,",
+						"          Country",
+						"     )) ~> AzureDataLakeSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -4143,154 +4291,6 @@
 						"     updateable: false,",
 						"     upsertable: true,",
 						"     keys:['Country','Isp','CdnNodeHost','Type','Title','SelectedQuality','DeviceType','Version','Connection','CommercilizationType','DeviceVendor','UserId','EndTime'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     outputAssertFailedRows: true,",
-						"     assertFailure_fileSystem: ($logsFileSystem),",
-						"     assertFailure_folderPath: ($logsFolderPath),",
-						"     partitionBy('key',",
-						"          0,",
-						"          Country",
-						"     )) ~> AzureDataLakeSink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataflow to copy IPTV data from Raw to Curated",
-				"folder": {
-					"name": "IPTV"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzureDataLakeStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "AzureDataLakeSource",
-							"description": "Source dataset in Azure Data Lake"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureDataLakeStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "AzureDataLakeSink",
-							"description": "Sink dataset in Azure Data Lake",
-							"rejectedDataLinkedService": {
-								"referenceName": "AzureDataLakeStorage",
-								"type": "LinkedServiceReference"
-							}
-						}
-					],
-					"transformations": [
-						{
-							"name": "DistinctRows"
-						},
-						{
-							"name": "RenameColumns",
-							"description": "Rename Columns"
-						},
-						{
-							"name": "FilterEmptyHappinessScore",
-							"description": "Filter Empty Happiness Score Rows"
-						},
-						{
-							"name": "AlterRow"
-						}
-					],
-					"scriptLines": [
-						"parameters{",
-						"     sourceFolderPath as string,",
-						"     sourceFileName as string,",
-						"     sourceFileSystem as string,",
-						"     sinkFileSystem as string,",
-						"     sinkFolderPath as string,",
-						"     logsFileSystem as string,",
-						"     logsFolderPath as string",
-						"}",
-						"source(output(",
-						"          app_version as string,",
-						"          country as string,",
-						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',",
-						"          happiness_score as float,",
-						"          hw_model as string,",
-						"          service as string,",
-						"          service_type as string,",
-						"          stb_model as string,",
-						"          streaming_protocol as string,",
-						"          title as string,",
-						"          topology_2 as string,",
-						"          topology_3 as string,",
-						"          topology_4 as string,",
-						"          topology_5 as string,",
-						"          tv_model as string,",
-						"          user_id as long",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'delimited',",
-						"     fileSystem: ($sourceFileSystem),",
-						"     folderPath: ($sourceFolderPath),",
-						"     fileName: ($sourceFileName),",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-						"RenameColumns aggregate(groupBy(mycols = sha2(256,columns())),",
-						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
-						"AzureDataLakeSource select(mapColumn(",
-						"          AppVersion = app_version,",
-						"          Country = country,",
-						"          HappinessScore = happiness_score,",
-						"          HwModel = hw_model,",
-						"          Service = service,",
-						"          ServiceType = service_type,",
-						"          StbModel = stb_model,",
-						"          StreamingProtocol = streaming_protocol,",
-						"          Title = title,",
-						"          Topology2 = topology_2,",
-						"          Topology3 = topology_3,",
-						"          Topology4 = topology_4,",
-						"          Topology5 = topology_5,",
-						"          TvModel = tv_model,",
-						"          UserId = user_id,",
-						"          EndTime = end_time",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"DistinctRows filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
-						"AlterRow sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delta',",
-						"     fileSystem: ($sinkFileSystem),",
-						"     folderPath: ($sinkFolderPath),",
-						"     mergeSchema: true,",
-						"     autoCompact: true,",
-						"     optimizedWrite: true,",
-						"     vacuum: 0,",
-						"     deletable: false,",
-						"     insertable: false,",
-						"     updateable: false,",
-						"     upsertable: true,",
-						"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','EndTime'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
