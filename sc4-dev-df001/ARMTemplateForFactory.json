@@ -110,6 +110,7 @@
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
@@ -3862,6 +3863,14 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -3880,7 +3889,7 @@
 					],
 					"transformations": [
 						{
-							"name": "DropColumn"
+							"name": "ExistingHashes"
 						}
 					],
 					"scriptLines": [
@@ -3916,12 +3925,15 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"AzureDataLakeSource select(mapColumn(",
-						"          each(match(name!='Hash'))",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> DropColumn",
-						"DropColumn sink(allowSchemaDrift: true,",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(Hash == toString('Hash'),",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
@@ -4078,7 +4090,7 @@
 						"     assertFailure_fileSystem: ($logsFileSystem),",
 						"     assertFailure_folderPath: ($logsFolderPath),",
 						"     partitionBy('key',",
-						"          1,",
+						"          0,",
 						"          Country",
 						"     )) ~> AzureDataLakeSink"
 					]
