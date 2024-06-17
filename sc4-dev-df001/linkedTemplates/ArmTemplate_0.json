@@ -986,6 +986,14 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -1002,7 +1010,11 @@
 							}
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "ExistingHashes"
+						}
+					],
 					"scriptLines": [
 						"parameters{",
 						"     sourceFileSystem as string,",
@@ -1025,7 +1037,8 @@
 						"          DeviceVendor as string,",
 						"          HappinessScore as float,",
 						"          UserId as long,",
-						"          EndTime as timestamp",
+						"          EndTime as timestamp,",
+						"          Hash as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -1033,7 +1046,32 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"AzureDataLakeSource sink(allowSchemaDrift: true,",
+						"source(output(",
+						"          Country as string,",
+						"          Isp as string,",
+						"          CdnNodeHost as string,",
+						"          Type as string,",
+						"          Title as string,",
+						"          SelectedQuality as string,",
+						"          DeviceType as string,",
+						"          Version as string,",
+						"          Connection as string,",
+						"          CommercilizationType as string,",
+						"          DeviceVendor as string,",
+						"          HappinessScore as double,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
@@ -1144,9 +1182,9 @@
 						"     escapeChar: '\\\\',",
 						"     quoteChar: '\\\"',",
 						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-						"RenameColumns aggregate(groupBy(mycols = sha2(256,columns())),",
+						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
 						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
-						"AzureDataLakeSource select(mapColumn(",
+						"DistinctRows select(mapColumn(",
 						"          Country,",
 						"          Isp = ISP,",
 						"          CdnNodeHost = {CDN Node Host},",
@@ -1160,11 +1198,12 @@
 						"          DeviceVendor = {Device Vendor},",
 						"          HappinessScore = {Happiness Score},",
 						"          UserId = {User ID},",
-						"          EndTime = {End Time}",
+						"          EndTime = {End Time},",
+						"          Hash = hash",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"DistinctRows filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 						"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
 						"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
 						"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
@@ -1181,7 +1220,7 @@
 						"     insertable: false,",
 						"     updateable: false,",
 						"     upsertable: true,",
-						"     keys:['Country','Isp','CdnNodeHost','Type','Title','SelectedQuality','DeviceType','Version','Connection','CommercilizationType','DeviceVendor','UserId','EndTime'],",
+						"     keys:['Hash'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
@@ -1819,6 +1858,7 @@
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
