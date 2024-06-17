@@ -132,7 +132,11 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",
 				"     assertFailure_fileSystem: ($logsFileSystem),",
-				"     assertFailure_folderPath: ($logsFolderPath)) ~> AzureDataLakeSink"
+				"     assertFailure_folderPath: ($logsFolderPath),",
+				"     partitionBy('key',",
+				"          1,",
+				"          Country",
+				"     )) ~> AzureDataLakeSink"
 			]
 		}
 	}
