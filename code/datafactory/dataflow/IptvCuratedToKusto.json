@@ -14,6 +14,14 @@
 					},
 					"name": "AzureDataLakeSource",
 					"description": "Source dataset in Azure Data Lake"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureDataExplorer",
+						"type": "LinkedServiceReference"
+					},
+					"name": "KustoSinkReference",
+					"description": "Kusto Sink Reference Dataset"
 				}
 			],
 			"sinks": [
@@ -32,7 +40,7 @@
 			],
 			"transformations": [
 				{
-					"name": "DropColumn"
+					"name": "ExistingHashes"
 				}
 			],
 			"scriptLines": [
@@ -68,12 +76,34 @@
 				"     format: 'delta',",
 				"     fileSystem: ($sourceFileSystem),",
 				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-				"AzureDataLakeSource select(mapColumn(",
-				"          each(match(name!='Hash'))",
+				"source(output(",
+				"          AppVersion as string,",
+				"          Country as string,",
+				"          HappinessScore as double,",
+				"          HwModel as string,",
+				"          Service as string,",
+				"          ServiceType as string,",
+				"          StbModel as string,",
+				"          StreamingProtocol as string,",
+				"          Title as string,",
+				"          Topology2 as string,",
+				"          Topology3 as string,",
+				"          Topology4 as string,",
+				"          Topology5 as string,",
+				"          TvModel as string,",
+				"          UserId as string,",
+				"          EndTime as timestamp,",
+				"          Hash as string",
 				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> DropColumn",
-				"DropColumn sink(allowSchemaDrift: true,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: ($sinkTable),",
+				"     store: 'azuredataexplorer') ~> KustoSinkReference",
+				"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> ExistingHashes",
+				"ExistingHashes sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",
