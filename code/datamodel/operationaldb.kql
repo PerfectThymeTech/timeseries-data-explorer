@@ -14,7 +14,8 @@
         DeviceVendor: string,
         HappinessScore: real,
         UserId: string,
-        EndTime: datetime
+        EndTime: datetime,
+        Hash: string
     ),
     iptv_raw(
         AppVersion: string,
@@ -32,7 +33,8 @@
         Topology4: string,
         Topology5: string,
         TvModel: string,
-        UserId: string
+        UserId: string,
+        Hash: string
     )
 
 // Create curated tables

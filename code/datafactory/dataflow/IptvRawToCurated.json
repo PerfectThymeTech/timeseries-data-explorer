@@ -33,6 +33,9 @@
 			],
 			"transformations": [
 				{
+					"name": "DistinctRows"
+				},
+				{
 					"name": "RenameColumns",
 					"description": "Rename Columns"
 				},
@@ -84,7 +87,9 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-				"AzureDataLakeSource select(mapColumn(",
+				"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+				"DistinctRows select(mapColumn(",
 				"          AppVersion = app_version,",
 				"          Country = country,",
 				"          HappinessScore = happiness_score,",
@@ -100,7 +105,8 @@
 				"          Topology5 = topology_5,",
 				"          TvModel = tv_model,",
 				"          UserId = user_id,",
-				"          EndTime = end_time",
+				"          EndTime = end_time,",
+				"          Hash = hash",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
@@ -119,7 +125,7 @@
 				"     insertable: false,",
 				"     updateable: false,",
 				"     upsertable: true,",
-				"     keys:['AppVersion','Country','HwModel','Service','ServiceType','StbModel','StreamingProtocol','Title','Topology2','Topology3','Topology4','Topology5','TvModel','UserId','EndTime'],",
+				"     keys:['Hash'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
@@ -129,7 +135,7 @@
 				"     assertFailure_fileSystem: ($logsFileSystem),",
 				"     assertFailure_folderPath: ($logsFolderPath),",
 				"     partitionBy('key',",
-				"          0,",
+				"          1,",
 				"          Country",
 				"     )) ~> AzureDataLakeSink"
 			]

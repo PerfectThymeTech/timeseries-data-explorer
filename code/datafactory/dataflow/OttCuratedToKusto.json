@@ -14,6 +14,14 @@
 					},
 					"name": "AzureDataLakeSource",
 					"description": "Source dataset in Azure Data Lake"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureDataExplorer",
+						"type": "LinkedServiceReference"
+					},
+					"name": "KustoSinkReference",
+					"description": "Kusto Sink Reference Dataset"
 				}
 			],
 			"sinks": [
@@ -30,7 +38,11 @@
 					}
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "ExistingHashes"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     sourceFileSystem as string,",
@@ -53,7 +65,8 @@
 				"          DeviceVendor as string,",
 				"          HappinessScore as float,",
 				"          UserId as long,",
-				"          EndTime as timestamp",
+				"          EndTime as timestamp,",
+				"          Hash as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -61,11 +74,37 @@
 				"     format: 'delta',",
 				"     fileSystem: ($sourceFileSystem),",
 				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-				"AzureDataLakeSource sink(allowSchemaDrift: true,",
+				"source(output(",
+				"          Country as string,",
+				"          Isp as string,",
+				"          CdnNodeHost as string,",
+				"          Type as string,",
+				"          Title as string,",
+				"          SelectedQuality as string,",
+				"          DeviceType as string,",
+				"          Version as string,",
+				"          Connection as string,",
+				"          CommercilizationType as string,",
+				"          DeviceVendor as string,",
+				"          HappinessScore as double,",
+				"          UserId as string,",
+				"          EndTime as timestamp,",
+				"          Hash as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: ($sinkTable),",
+				"     store: 'azuredataexplorer') ~> KustoSinkReference",
+				"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> ExistingHashes",
+				"ExistingHashes sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",
 				"     store: 'azuredataexplorer',",
+				"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",

@@ -24,6 +24,24 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "SetVariableMinimumPlays",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetVariableMinimumLift",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "SetVariableMinimumUsersRatio",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -181,6 +199,174 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "SetVariableMinimumPlays",
+				"description": "Set Variable \"minimumPlays\"",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "minimumPlays",
+					"value": {
+						"value": "@string(pipeline().globalParameters.minimumPlays)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetVariableMinimumLift",
+				"description": "Set Variable \"minimumLift\"",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "minimumLift",
+					"value": {
+						"value": "@string(pipeline().globalParameters.minimumLift)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetVariableMinimumUsersRatio",
+				"description": "Set Variable \"minimumUsersRatio\"",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "minimumUsersRatio",
+					"value": {
+						"value": "@string(pipeline().globalParameters.minimumUsersRatio)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "MinimumPlaysToKusto",
+				"description": "Insert Reference data into Kusto",
+				"type": "AzureDataExplorerCommand",
+				"dependsOn": [
+					{
+						"activity": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"command": {
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumPlays\", value = real(', variables('minimumPlays'), '), timestamp = now()')",
+						"type": "Expression"
+					},
+					"commandTimeout": "00:10:00"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDataExplorer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseName": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "MinimumLiftToKusto",
+				"description": "Insert Reference data into Kusto",
+				"type": "AzureDataExplorerCommand",
+				"dependsOn": [
+					{
+						"activity": "MinimumPlaysToKusto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"command": {
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumLift\", value = real(', variables('minimumLift'), '), timestamp = now()')",
+						"type": "Expression"
+					},
+					"commandTimeout": "00:10:00"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDataExplorer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseName": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "MinimumUsersRatioToKusto",
+				"description": "Insert Reference data into Kusto",
+				"type": "AzureDataExplorerCommand",
+				"dependsOn": [
+					{
+						"activity": "MinimumLiftToKusto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"command": {
+						"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumUsersRatio\", value = real(', variables('minimumUsersRatio'), '), timestamp = now()')",
+						"type": "Expression"
+					},
+					"commandTimeout": "00:10:00"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDataExplorer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseName": {
+							"value": "@pipeline().parameters.sinkDatabase",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -199,6 +385,15 @@
 				"type": "String"
 			},
 			"minimumNumberOfUsersPerWindow": {
+				"type": "String"
+			},
+			"minimumPlays": {
+				"type": "String"
+			},
+			"minimumLift": {
+				"type": "String"
+			},
+			"minimumUsersRatio": {
 				"type": "String"
 			}
 		},

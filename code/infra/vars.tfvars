@@ -19,6 +19,18 @@ data_factory_global_parameters = {
     type  = "Float"
     value = "10.0"
   }
+  minimumPlays = {
+    type  = "Float"
+    value = "20.0"
+  }
+  minimumLift = {
+    type  = "Float"
+    value = "5.0"
+  }
+  minimumUsersRatio = {
+    type  = "Float"
+    value = "0.1"
+  }
 }
 data_factory_published_content = {
   parameters_file = "../../sc4-dev-df001/ARMTemplateParametersForFactory.json"

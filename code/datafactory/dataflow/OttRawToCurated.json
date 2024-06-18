@@ -33,6 +33,9 @@
 			],
 			"transformations": [
 				{
+					"name": "DistinctRows"
+				},
+				{
 					"name": "RenameColumns",
 					"description": "Rename Columns"
 				},
@@ -86,7 +89,9 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-				"AzureDataLakeSource select(mapColumn(",
+				"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+				"DistinctRows select(mapColumn(",
 				"          Country,",
 				"          Isp = ISP,",
 				"          CdnNodeHost = {CDN Node Host},",
@@ -100,7 +105,8 @@
 				"          DeviceVendor = {Device Vendor},",
 				"          HappinessScore = {Happiness Score},",
 				"          UserId = {User ID},",
-				"          EndTime = {End Time}",
+				"          EndTime = {End Time},",
+				"          Hash = hash",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
@@ -121,7 +127,7 @@
 				"     insertable: false,",
 				"     updateable: false,",
 				"     upsertable: true,",
-				"     keys:['Country','Isp','CdnNodeHost','Type','Title','SelectedQuality','DeviceType','Version','Connection','CommercilizationType','DeviceVendor','UserId','EndTime'],",
+				"     keys:['Hash'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
