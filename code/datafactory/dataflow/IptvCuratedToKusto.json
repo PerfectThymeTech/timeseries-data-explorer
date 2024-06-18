@@ -108,6 +108,7 @@
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",
 				"     store: 'azuredataexplorer',",
+				"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",
