@@ -384,6 +384,24 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
+							},
+							{
+								"activity": "SetVariableMinimumPlays",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumLift",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumUsersRatio",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
 						"policy": {
@@ -541,6 +559,174 @@
 								}
 							}
 						}
+					},
+					{
+						"name": "SetVariableMinimumPlays",
+						"description": "Set Variable \"minimumPlays\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumPlays",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumPlays)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumLift",
+						"description": "Set Variable \"minimumLift\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumLift",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumLift)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumUsersRatio",
+						"description": "Set Variable \"minimumUsersRatio\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumUsersRatio",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumUsersRatio)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "MinimumPlaysToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumPlays\", value = real(', variables('minimumPlays'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumLiftToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumPlaysToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumLift\", value = real(', variables('minimumLift'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumUsersRatioToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumLiftToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumUsersRatio\", value = real(', variables('minimumUsersRatio'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
 					}
 				],
 				"policy": {
@@ -562,6 +748,15 @@
 						"type": "String"
 					},
 					"minimumNumberOfUsersPerWindow": {
+						"type": "String"
+					},
+					"minimumPlays": {
+						"type": "String"
+					},
+					"minimumLift": {
+						"type": "String"
+					},
+					"minimumUsersRatio": {
 						"type": "String"
 					}
 				},
@@ -712,6 +907,14 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -728,7 +931,11 @@
 							}
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "ExistingHashes"
+						}
+					],
 					"scriptLines": [
 						"parameters{",
 						"     sourceFileSystem as string,",
@@ -753,7 +960,8 @@
 						"          Topology5 as string,",
 						"          TvModel as string,",
 						"          UserId as long,",
-						"          EndTime as timestamp",
+						"          EndTime as timestamp,",
+						"          Hash as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -761,11 +969,39 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"AzureDataLakeSource sink(allowSchemaDrift: true,",
+						"source(output(",
+						"          AppVersion as string,",
+						"          Country as string,",
+						"          HappinessScore as double,",
+						"          HwModel as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          StbModel as string,",
+						"          StreamingProtocol as string,",
+						"          Title as string,",
+						"          Topology2 as string,",
+						"          Topology3 as string,",
+						"          Topology4 as string,",
+						"          Topology5 as string,",
+						"          TvModel as string,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
 						"     store: 'azuredataexplorer',",
+						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     outputAssertFailedRows: true,",
@@ -816,12 +1052,18 @@
 					],
 					"transformations": [
 						{
+							"name": "DistinctRows"
+						},
+						{
 							"name": "RenameColumns",
 							"description": "Rename Columns"
 						},
 						{
 							"name": "FilterEmptyHappinessScore",
 							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "AlterRow"
 						}
 					],
 					"scriptLines": [
@@ -864,7 +1106,9 @@
 						"     escapeChar: '\\\\',",
 						"     quoteChar: '\\\"',",
 						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-						"AzureDataLakeSource select(mapColumn(",
+						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+						"DistinctRows select(mapColumn(",
 						"          AppVersion = app_version,",
 						"          Country = country,",
 						"          HappinessScore = happiness_score,",
@@ -880,12 +1124,14 @@
 						"          Topology5 = topology_5,",
 						"          TvModel = tv_model,",
 						"          UserId = user_id,",
-						"          EndTime = end_time",
+						"          EndTime = end_time,",
+						"          Hash = hash",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-						"FilterEmptyHappinessScore sink(allowSchemaDrift: true,",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
@@ -895,9 +1141,10 @@
 						"     optimizedWrite: true,",
 						"     vacuum: 0,",
 						"     deletable: false,",
-						"     insertable: true,",
+						"     insertable: false,",
 						"     updateable: false,",
-						"     upsertable: false,",
+						"     upsertable: true,",
+						"     keys:['Hash'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
@@ -935,6 +1182,14 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -951,7 +1206,11 @@
 							}
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "ExistingHashes"
+						}
+					],
 					"scriptLines": [
 						"parameters{",
 						"     sourceFileSystem as string,",
@@ -974,7 +1233,8 @@
 						"          DeviceVendor as string,",
 						"          HappinessScore as float,",
 						"          UserId as long,",
-						"          EndTime as timestamp",
+						"          EndTime as timestamp,",
+						"          Hash as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -982,11 +1242,37 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"AzureDataLakeSource sink(allowSchemaDrift: true,",
+						"source(output(",
+						"          Country as string,",
+						"          Isp as string,",
+						"          CdnNodeHost as string,",
+						"          Type as string,",
+						"          Title as string,",
+						"          SelectedQuality as string,",
+						"          DeviceType as string,",
+						"          Version as string,",
+						"          Connection as string,",
+						"          CommercilizationType as string,",
+						"          DeviceVendor as string,",
+						"          HappinessScore as double,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
 						"     store: 'azuredataexplorer',",
+						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     outputAssertFailedRows: true,",
@@ -1037,6 +1323,9 @@
 					],
 					"transformations": [
 						{
+							"name": "DistinctRows"
+						},
+						{
 							"name": "RenameColumns",
 							"description": "Rename Columns"
 						},
@@ -1047,6 +1336,9 @@
 						{
 							"name": "HarmonizeColumn",
 							"description": "Harmonize columns: Connection, DeviceVendor"
+						},
+						{
+							"name": "AlterRow"
 						}
 					],
 					"scriptLines": [
@@ -1087,7 +1379,9 @@
 						"     escapeChar: '\\\\',",
 						"     quoteChar: '\\\"',",
 						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
-						"AzureDataLakeSource select(mapColumn(",
+						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+						"DistinctRows select(mapColumn(",
 						"          Country,",
 						"          Isp = ISP,",
 						"          CdnNodeHost = {CDN Node Host},",
@@ -1101,14 +1395,16 @@
 						"          DeviceVendor = {Device Vendor},",
 						"          HappinessScore = {Happiness Score},",
 						"          UserId = {User ID},",
-						"          EndTime = {End Time}",
+						"          EndTime = {End Time},",
+						"          Hash = hash",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 						"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
 						"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
-						"HarmonizeColumn sink(allowSchemaDrift: true,",
+						"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
 						"     fileSystem: ($sinkFileSystem),",
@@ -1118,9 +1414,10 @@
 						"     optimizedWrite: true,",
 						"     vacuum: 0,",
 						"     deletable: false,",
-						"     insertable: true,",
+						"     insertable: false,",
 						"     updateable: false,",
-						"     upsertable: false,",
+						"     upsertable: true,",
+						"     keys:['Hash'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
@@ -1186,6 +1483,7 @@
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
@@ -1757,6 +2055,7 @@
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
