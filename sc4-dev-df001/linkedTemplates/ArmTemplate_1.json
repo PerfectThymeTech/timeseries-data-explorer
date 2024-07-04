@@ -7,18 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "sc4-dev-df001"
 		},
-		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
-			"type": "string",
-			"defaultValue": "@triggerBody().folderPath"
-		},
-		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
-			"type": "string",
-			"defaultValue": "@triggerBody().fileName"
-		},
-		"TestUpload_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
-		},
 		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
@@ -48,6 +36,147 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataflowCuratedToKusto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "OttCuratedToKusto",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sinkTable": {
+										"value": "'@{pipeline().parameters.sinkTable}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
+									"KustoSink": {}
+								},
+								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
+									"KustoSink": {
+										"linkedService": {
+											"databaseName": {
+												"value": "@pipeline().parameters.sinkDatabase",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							},
+							"staging": {},
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkDatabase",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkDatabase"
+									}
+								},
+								{
+									"key": "sinkTable",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkTable"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/OttRawToCurated')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -107,9 +236,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -491,38 +620,6 @@
 					"name": "Tests/Reference"
 				},
 				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "TestParseBlobTrigger",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
-							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
-						}
-					}
-				],
-				"type": "BlobEventsTrigger",
-				"typeProperties": {
-					"blobPathBeginsWith": "/upload-ott/blobs/",
-					"blobPathEndsWith": ".csv",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
-					"events": [
-						"Microsoft.Storage.BlobCreated"
-					]
-				}
 			},
 			"dependsOn": []
 		},
@@ -1016,6 +1113,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/OttRawToCurated')]",
+				"[concat(variables('factoryId'), '/pipelines/OttCuratedToKusto')]",
 				"[concat(variables('factoryId'), '/pipelines/OttUploadToRaw')]"
 			]
 		},
@@ -1812,7 +1910,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/OttCuratedToKusto')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/TestOttRawToCurated')]",

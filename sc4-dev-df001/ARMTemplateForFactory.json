@@ -114,6 +114,11 @@
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -125,9 +130,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -199,7 +204,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -511,9 +517,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -588,7 +594,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -1048,6 +1055,11 @@
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -1059,9 +1071,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1133,7 +1145,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]"
+				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -1445,9 +1458,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1522,7 +1535,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttRawToCurated')]"
+				"[concat(variables('factoryId'), '/dataflows/OttRawToCurated')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -3821,9 +3835,15 @@
 				"typeProperties": {
 					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
 					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
@@ -3835,9 +3855,15 @@
 				"type": "AzureBlobFS",
 				"typeProperties": {
 					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",

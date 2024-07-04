@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "sc4-dev-df001"
 		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+		},
 		"AzureDataExplorer_properties_typeProperties_endpoint": {
 			"type": "string",
 			"defaultValue": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
@@ -19,9 +23,17 @@
 			"type": "string",
 			"defaultValue": "https://sc4devstg001.dfs.core.windows.net/"
 		},
-		"AzureKeyVault_properties_typeProperties_baseUrl": {
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
 			"type": "string",
-			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"TestUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		}
 	},
 	"variables": {
@@ -172,41 +184,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataExplorer')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Azure Data Explorer",
-				"parameters": {
-					"databaseName": {
-						"type": "string",
-						"defaultValue": "operationaldb"
-					}
-				},
-				"annotations": [],
-				"type": "AzureDataExplorer",
-				"typeProperties": {
-					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
-					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Azure Data Lake Storage",
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -241,6 +218,106 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ParseBlobTrigger",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "ParseBlobTrigger",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"uploadSourceFolderPath": {
+									"value": "@pipeline().parameters.uploadSourceFolderPath",
+									"type": "Expression"
+								},
+								"uploadSourceFileName": {
+									"value": "@pipeline().parameters.uploadSourceFileName",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Tests/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataExplorer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Explorer",
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					}
+				},
+				"annotations": [],
+				"type": "AzureDataExplorer",
+				"typeProperties": {
+					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
+					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Lake Storage",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/KustoIptv')]",
@@ -770,59 +847,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "ParseBlobTrigger",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "ParseBlobTrigger",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"uploadSourceFolderPath": {
-									"value": "@pipeline().parameters.uploadSourceFolderPath",
-									"type": "Expression"
-								},
-								"uploadSourceFileName": {
-									"value": "@pipeline().parameters.uploadSourceFileName",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"uploadSourceFolderPath": {
-						"type": "string"
-					},
-					"uploadSourceFileName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Tests/General"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -887,6 +911,40 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "TestParseBlobTrigger",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
+							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/upload-ott/blobs/",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/TestParseBlobTrigger')]"
 			]
 		},
 		{
@@ -1495,6 +1553,11 @@
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -1506,9 +1569,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1580,7 +1643,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -1642,9 +1706,9 @@
 								}
 							},
 							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+							"integrationRuntime": {
+								"referenceName": "IntegrationRuntime001",
+								"type": "IntegrationRuntimeReference"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1719,7 +1783,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		},
 		{
@@ -2013,144 +2078,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/KustoIptv')]",
 				"[concat(variables('factoryId'), '/pipelines/KustoOtt')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "DataflowCuratedToKusto",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 1,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "OttCuratedToKusto",
-								"type": "DataFlowReference",
-								"parameters": {
-									"sourceFileSystem": {
-										"value": "'@{pipeline().parameters.sourceFileSystem}'",
-										"type": "Expression"
-									},
-									"sourceFolderPath": {
-										"value": "'@{pipeline().parameters.sourceFolderPath}'",
-										"type": "Expression"
-									},
-									"sinkTable": {
-										"value": "'@{pipeline().parameters.sinkTable}'",
-										"type": "Expression"
-									},
-									"logsFileSystem": {
-										"value": "'@{pipeline().parameters.logsFileSystem}'",
-										"type": "Expression"
-									},
-									"logsFolderPath": {
-										"value": "'@{pipeline().parameters.logsFolderPath}'",
-										"type": "Expression"
-									}
-								},
-								"datasetParameters": {
-									"AzureDataLakeSource": {},
-									"KustoSinkReference": {},
-									"KustoSink": {}
-								},
-								"linkedServiceParameters": {
-									"KustoSink": {
-										"linkedService": {
-											"databaseName": {
-												"value": "@pipeline().parameters.sinkDatabase",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Coarse"
-						}
-					},
-					{
-						"name": "SetPipelineOutput",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "DataflowCuratedToKusto",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "pipelineReturnValue",
-							"value": [
-								{
-									"key": "sinkDatabase",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkDatabase"
-									}
-								},
-								{
-									"key": "sinkTable",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkTable"
-									}
-								}
-							],
-							"setSystemVariable": true
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"sourceFileSystem": {
-						"type": "string"
-					},
-					"sourceFolderPath": {
-						"type": "string"
-					},
-					"sinkDatabase": {
-						"type": "string"
-					},
-					"sinkTable": {
-						"type": "string"
-					},
-					"logsFileSystem": {
-						"type": "string"
-					},
-					"logsFolderPath": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Pipelines/OTT"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]"
 			]
 		}
 	]
