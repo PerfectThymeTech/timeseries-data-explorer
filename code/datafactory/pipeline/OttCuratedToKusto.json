@@ -41,6 +41,11 @@
 							}
 						},
 						"linkedServiceParameters": {
+							"KustoSinkReference": {
+								"linkedService": {
+									"databaseName": "operationaldb"
+								}
+							},
 							"KustoSink": {
 								"linkedService": {
 									"databaseName": {
@@ -51,9 +56,9 @@
 							}
 						}
 					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"integrationRuntime": {
+						"referenceName": "IntegrationRuntime001",
+						"type": "IntegrationRuntimeReference"
 					},
 					"traceLevel": "Coarse"
 				}
