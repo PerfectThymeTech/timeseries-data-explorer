@@ -120,7 +120,7 @@
         StbManufacturer,
         StbSwVersion,
         StreamingProtocol,
-        CdnNodeHostname,
+        CdnHostname,
         CdnPop,
         ChannelName
 }
@@ -140,7 +140,7 @@
         Device,
         Title,
         Isp,
-        CdnNodeHostname,
+        CdnHostname,
         CdnPop,
         AppReleaseVersion,
         Browser,
