@@ -1498,9 +1498,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1572,8 +1572,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]"
 			]
 		},
 		{
@@ -1635,9 +1634,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1712,8 +1711,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]"
 			]
 		},
 		{
@@ -2070,9 +2068,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -2144,8 +2142,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]"
 			]
 		}
 	]
