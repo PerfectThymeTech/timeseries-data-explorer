@@ -44,10 +44,6 @@
 					"description": "Filter Empty Happiness Score Rows"
 				},
 				{
-					"name": "HarmonizeColumn",
-					"description": "Harmonize columns: Connection, DeviceVendor"
-				},
-				{
 					"name": "AlterRow"
 				}
 			],
@@ -113,9 +109,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 				"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-				"FilterEmptyHappinessScore derive(Connection = lower(AppReleaseVersion),",
-				"          DeviceVendor = lower(Os)) ~> HarmonizeColumn",
-				"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
+				"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
 				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
