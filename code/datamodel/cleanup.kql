@@ -1,0 +1,18 @@
+// Drop tables
+.drop table ott_raw
+
+.drop table iptv_raw
+
+.drop table ott_happiness
+
+.drop table iptv_happiness
+
+// Drop functions
+.drop function IptvGetAvgHappinessScore
+
+.drop function OttGetAvgHappinessScore
+
+// Drop materalized view
+.drop materialized-view iptv_happiness_mv
+
+.drop materialized-view ott_happiness_mv
