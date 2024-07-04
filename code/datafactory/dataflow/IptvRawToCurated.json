@@ -73,7 +73,7 @@
 				"          cdn_hostname as string,",
 				"          cdn_pop as string,",
 				"          channel_name as string,",
-				"          happiness_score as double,",
+				"          happiness_score as float,",
 				"          user_id as double,",
 				"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
 				"     ),",
