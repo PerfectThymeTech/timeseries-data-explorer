@@ -2,38 +2,41 @@
 .create-merge tables
     ott_raw(
         Country: string,
-        Isp: string,
-        CdnNodeHost: string,
-        Type: string,
+        Service: string,
+        ServiceType: string,
+        Device: string,
         Title: string,
-        SelectedQuality: string,
-        DeviceType: string,
-        Version: string,
-        Connection: string,
-        CommercilizationType: string,
-        DeviceVendor: string,
+        Isp: string,
+        CdnHostname: string,
+        CdnPop: string,
+        AppReleaseVersion: string,
+        Browser: string,
+        Os: string,
+        Player: string,
         HappinessScore: real,
         UserId: string,
         EndTime: datetime,
         Hash: string
     ),
     iptv_raw(
-        AppVersion: string,
         Country: string,
-        EndTime: datetime,
-        HappinessScore: real,
-        HwModel: string,
         Service: string,
         ServiceType: string,
-        StbModel: string,
-        StreamingProtocol: string,
-        Title: string,
         Topology2: string,
         Topology3: string,
         Topology4: string,
         Topology5: string,
-        TvModel: string,
+        Title: string,
+        StbModel: string,
+        StbManufacturer: string,
+        StbSwVersion: string,
+        StreamingProtocol: string,
+        CdnHostname: string,
+        CdnPop: string,
+        ChannelName: string,
+        HappinessScore: real,
         UserId: string,
+        EndTime: datetime,
         Hash: string
     )
 
@@ -41,34 +44,37 @@
 .create-merge tables
     ott_happiness(
         Country: string,
-        Isp: string,
-        CdnNodeHost: string,
-        Type: string,
+        Service: string,
+        ServiceType: string,
+        Device: string,
         Title: string,
-        SelectedQuality: string,
-        DeviceType: string,
-        Version: string,
-        Connection: string,
-        CommercilizationType: string,
-        DeviceVendor: string,
+        Isp: string,
+        CdnHostname: string,
+        CdnPop: string,
+        AppReleaseVersion: string,
+        Browser: string,
+        Os: string,
+        Player: string,
         AvgHappinessScore: real,
         NumberOfUsers: long,
         Timestamp: datetime
     ),
     iptv_happiness(
-        AppVersion: string,
         Country: string,
-        HwModel: string,
         Service: string,
         ServiceType: string,
-        StbModel: string,
-        StreamingProtocol: string,
-        Title: string,
         Topology2: string,
         Topology3: string,
         Topology4: string,
         Topology5: string,
-        TvModel: string,
+        Title: string,
+        StbModel: string,
+        StbManufacturer: string,
+        StbSwVersion: string,
+        StreamingProtocol: string,
+        CdnHostname: string,
+        CdnPop: string,
+        ChannelName: string,
         AvgHappinessScore: real,
         NumberOfUsers: long,
         Timestamp: datetime
@@ -102,19 +108,21 @@
         NumberOfUsers = count_distinct(UserId),
         Timestamp = currentTimestamp
         by
-        AppVersion,
         Country,
-        HwModel,
         Service,
         ServiceType,
-        StbModel,
-        StreamingProtocol,
-        Title,
         Topology2,
         Topology3,
         Topology4,
         Topology5,
-        TvModel
+        Title,
+        StbModel,
+        StbManufacturer,
+        StbSwVersion,
+        StreamingProtocol,
+        CdnNodeHostname,
+        CdnPop,
+        ChannelName
 }
 
 .create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore() {
@@ -127,16 +135,17 @@
         Timestamp = currentTimestamp
         by
         Country,
-        Isp,
-        CdnNodeHost,
-        Type,
+        Service,
+        ServiceType,
+        Device,
         Title,
-        SelectedQuality,
-        DeviceType,
-        Version,
-        Connection,
-        CommercilizationType,
-        DeviceVendor
+        Isp,
+        CdnNodeHostname,
+        CdnPop,
+        AppReleaseVersion,
+        Browser,
+        Os,
+        Player
 }
 
 .create-or-alter function with (docstring = 'Function to get average happiness scores for ott data for one column', folder='ott') OttGetAvgHappinessScoreForOneColumn(columnName: string) {
@@ -204,19 +213,21 @@
         AvgHappinessScore = avg(HappinessScore),
         NumberOfUsers = dcount(UserId)
         by
-        AppVersion,
         Country,
-        HwModel,
         Service,
         ServiceType,
-        StbModel,
-        StreamingProtocol,
-        Title,
         Topology2,
         Topology3,
         Topology4,
         Topology5,
-        TvModel
+        Title,
+        StbModel,
+        StbManufacturer,
+        StbSwVersion,
+        StreamingProtocol,
+        CdnHostname,
+        CdnPop,
+        ChannelName
 }
 
 .create ifnotexists materialized-view with (docString='OTT Happiness Score Average', folder='ott') ott_happiness_mv on table ott_raw {
@@ -226,16 +237,17 @@
         NumberOfUsers = dcount(UserId)
         by
         Country,
-        Isp,
-        CdnNodeHost,
-        Type,
+        Service,
+        ServiceType,
+        Device,
         Title,
-        SelectedQuality,
-        DeviceType,
-        Version,
-        Connection,
-        CommercilizationType,
-        DeviceVendor
+        Isp,
+        CdnHostname,
+        CdnPop,
+        AppReleaseVersion,
+        Browser,
+        Os,
+        Player
 }
 
 // Create views
