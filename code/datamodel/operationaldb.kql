@@ -35,7 +35,7 @@
         CdnPop: string,
         ChannelName: string,
         HappinessScore: real,
-        UserId: string
+        UserId: string,
         EndTime: datetime,
         Hash: string
     )
