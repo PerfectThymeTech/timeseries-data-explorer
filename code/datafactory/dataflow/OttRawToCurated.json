@@ -71,7 +71,7 @@
 				"          os as string,",
 				"          player as string,",
 				"          happiness_score as float,",
-				"          user_id as long,",
+				"          user_id as string,",
 				"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
 				"     ),",
 				"     useSchema: false,",
