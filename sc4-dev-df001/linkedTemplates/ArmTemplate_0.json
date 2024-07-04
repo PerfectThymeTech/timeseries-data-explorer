@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "sc4-dev-df001"
 		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+		},
 		"AzureDataExplorer_properties_typeProperties_endpoint": {
 			"type": "string",
 			"defaultValue": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
@@ -19,9 +23,17 @@
 			"type": "string",
 			"defaultValue": "https://sc4devstg001.dfs.core.windows.net/"
 		},
-		"AzureKeyVault_properties_typeProperties_baseUrl": {
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
 			"type": "string",
-			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"TestUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
 		}
 	},
 	"variables": {
@@ -172,41 +184,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataExplorer')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Azure Data Explorer",
-				"parameters": {
-					"databaseName": {
-						"type": "string",
-						"defaultValue": "operationaldb"
-					}
-				},
-				"annotations": [],
-				"type": "AzureDataExplorer",
-				"typeProperties": {
-					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
-					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Azure Data Lake Storage",
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -241,6 +218,106 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ParseBlobTrigger",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "ParseBlobTrigger",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"uploadSourceFolderPath": {
+									"value": "@pipeline().parameters.uploadSourceFolderPath",
+									"type": "Expression"
+								},
+								"uploadSourceFileName": {
+									"value": "@pipeline().parameters.uploadSourceFileName",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Tests/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataExplorer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Explorer",
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					}
+				},
+				"annotations": [],
+				"type": "AzureDataExplorer",
+				"typeProperties": {
+					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
+					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Lake Storage",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntime001",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/KustoIptv')]",
@@ -770,59 +847,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "ParseBlobTrigger",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "ParseBlobTrigger",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"uploadSourceFolderPath": {
-									"value": "@pipeline().parameters.uploadSourceFolderPath",
-									"type": "Expression"
-								},
-								"uploadSourceFileName": {
-									"value": "@pipeline().parameters.uploadSourceFileName",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"uploadSourceFolderPath": {
-						"type": "string"
-					},
-					"uploadSourceFileName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Tests/General"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -890,6 +914,40 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "TestParseBlobTrigger",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
+							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/upload-ott/blobs/",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/TestParseBlobTrigger')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/IptvCuratedToKusto')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -945,21 +1003,23 @@
 						"     logsFolderPath as string",
 						"}",
 						"source(output(",
-						"          AppVersion as string,",
 						"          Country as string,",
-						"          HappinessScore as float,",
-						"          HwModel as string,",
 						"          Service as string,",
 						"          ServiceType as string,",
-						"          StbModel as string,",
-						"          StreamingProtocol as string,",
-						"          Title as string,",
 						"          Topology2 as string,",
 						"          Topology3 as string,",
 						"          Topology4 as string,",
 						"          Topology5 as string,",
-						"          TvModel as string,",
-						"          UserId as long,",
+						"          Title as string,",
+						"          StbModel as string,",
+						"          StbManufacturer as string,",
+						"          StbSwVersion as string,",
+						"          StreamingProtocol as string,",
+						"          CdnHostname as string,",
+						"          CdnPop as string,",
+						"          ChannelName as string,",
+						"          HappinessScore as float,",
+						"          UserId as string,",
 						"          EndTime as timestamp,",
 						"          Hash as string",
 						"     ),",
@@ -970,23 +1030,26 @@
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
 						"source(output(",
-						"          AppVersion as string,",
 						"          Country as string,",
-						"          HappinessScore as double,",
-						"          HwModel as string,",
 						"          Service as string,",
 						"          ServiceType as string,",
-						"          StbModel as string,",
-						"          StreamingProtocol as string,",
-						"          Title as string,",
 						"          Topology2 as string,",
 						"          Topology3 as string,",
 						"          Topology4 as string,",
 						"          Topology5 as string,",
-						"          TvModel as string,",
+						"          Title as string,",
+						"          StbModel as string,",
+						"          StbManufacturer as string,",
+						"          StbSwVersion as string,",
+						"          StreamingProtocol as string,",
+						"          CdnNodeHostname as string,",
+						"          CdnPop as string,",
+						"          ChannelName as string,",
+						"          HappinessScore as double,",
 						"          UserId as string,",
 						"          EndTime as timestamp,",
-						"          Hash as string",
+						"          Hash as string,",
+						"          CdnHostname as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -1077,22 +1140,24 @@
 						"     logsFolderPath as string",
 						"}",
 						"source(output(",
-						"          app_version as string,",
 						"          country as string,",
-						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',",
-						"          happiness_score as float,",
-						"          hw_model as string,",
 						"          service as string,",
+						"          topology_5 as string,",
+						"          topology_4 as string,",
+						"          topology_3 as string,",
+						"          topology_2 as string,",
+						"          title as string,",
 						"          service_type as string,",
 						"          stb_model as string,",
+						"          stb_manufacturer as string,",
+						"          stb_sw_version as string,",
 						"          streaming_protocol as string,",
-						"          title as string,",
-						"          topology_2 as string,",
-						"          topology_3 as string,",
-						"          topology_4 as string,",
-						"          topology_5 as string,",
-						"          tv_model as string,",
-						"          user_id as long",
+						"          cdn_hostname as string,",
+						"          cdn_pop as string,",
+						"          channel_name as string,",
+						"          happiness_score as float,",
+						"          user_id as string,",
+						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
 						"     ),",
 						"     useSchema: false,",
 						"     allowSchemaDrift: true,",
@@ -1109,20 +1174,22 @@
 						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
 						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
 						"DistinctRows select(mapColumn(",
-						"          AppVersion = app_version,",
 						"          Country = country,",
-						"          HappinessScore = happiness_score,",
-						"          HwModel = hw_model,",
 						"          Service = service,",
 						"          ServiceType = service_type,",
-						"          StbModel = stb_model,",
-						"          StreamingProtocol = streaming_protocol,",
-						"          Title = title,",
 						"          Topology2 = topology_2,",
 						"          Topology3 = topology_3,",
 						"          Topology4 = topology_4,",
 						"          Topology5 = topology_5,",
-						"          TvModel = tv_model,",
+						"          Title = title,",
+						"          StbModel = stb_model,",
+						"          StbManufacturer = stb_manufacturer,",
+						"          StbSwVersion = stb_sw_version,",
+						"          StreamingProtocol = streaming_protocol,",
+						"          CdnHostname = cdn_hostname,",
+						"          CdnPop = cdn_pop,",
+						"          ChannelName = channel_name,",
+						"          HappinessScore = happiness_score,",
 						"          UserId = user_id,",
 						"          EndTime = end_time,",
 						"          Hash = hash",
@@ -1221,18 +1288,19 @@
 						"}",
 						"source(output(",
 						"          Country as string,",
-						"          Isp as string,",
-						"          CdnNodeHost as string,",
-						"          Type as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Device as string,",
 						"          Title as string,",
-						"          SelectedQuality as string,",
-						"          DeviceType as string,",
-						"          Version as string,",
-						"          Connection as string,",
-						"          CommercilizationType as string,",
-						"          DeviceVendor as string,",
+						"          Isp as string,",
+						"          CdnHostname as string,",
+						"          CdnPop as string,",
+						"          AppReleaseVersion as string,",
+						"          Browser as string,",
+						"          Os as string,",
+						"          Player as string,",
 						"          HappinessScore as float,",
-						"          UserId as long,",
+						"          UserId as string,",
 						"          EndTime as timestamp,",
 						"          Hash as string",
 						"     ),",
@@ -1244,20 +1312,22 @@
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
 						"source(output(",
 						"          Country as string,",
-						"          Isp as string,",
-						"          CdnNodeHost as string,",
-						"          Type as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Device as string,",
 						"          Title as string,",
-						"          SelectedQuality as string,",
-						"          DeviceType as string,",
-						"          Version as string,",
-						"          Connection as string,",
-						"          CommercilizationType as string,",
-						"          DeviceVendor as string,",
+						"          Isp as string,",
+						"          CdnNodeHostname as string,",
+						"          CdnPop as string,",
+						"          AppReleaseVersion as string,",
+						"          Browser as string,",
+						"          Os as string,",
+						"          Player as string,",
 						"          HappinessScore as double,",
 						"          UserId as string,",
 						"          EndTime as timestamp,",
-						"          Hash as string",
+						"          Hash as string,",
+						"          CdnHostname as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -1334,10 +1404,6 @@
 							"description": "Filter Empty Happiness Score Rows"
 						},
 						{
-							"name": "HarmonizeColumn",
-							"description": "Harmonize columns: Connection, DeviceVendor"
-						},
-						{
 							"name": "AlterRow"
 						}
 					],
@@ -1352,20 +1418,21 @@
 						"     logsFolderPath as string",
 						"}",
 						"source(output(",
-						"          Country as string,",
-						"          ISP as string,",
-						"          {CDN Node Host} as string,",
-						"          Type as string,",
-						"          Title as string,",
-						"          SELECTED_QUALITY as string,",
-						"          DEVICE_TYPE as string,",
-						"          VERSION as string,",
-						"          CONNECTION as string,",
-						"          {COMMERCIALIZATION TYPE} as string,",
-						"          {Device Vendor} as string,",
-						"          {Happiness Score} as float,",
-						"          {User ID} as long,",
-						"          {End Time} as timestamp",
+						"          country as string,",
+						"          service as string,",
+						"          device as string,",
+						"          title as string,",
+						"          service_type as string,",
+						"          isp as string,",
+						"          cdn_hostname as string,",
+						"          cdn_pop as string,",
+						"          app_release_version as string,",
+						"          browser as string,",
+						"          os as string,",
+						"          player as string,",
+						"          happiness_score as float,",
+						"          user_id as string,",
+						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
 						"     ),",
 						"     useSchema: false,",
 						"     allowSchemaDrift: true,",
@@ -1382,28 +1449,27 @@
 						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
 						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
 						"DistinctRows select(mapColumn(",
-						"          Country,",
-						"          Isp = ISP,",
-						"          CdnNodeHost = {CDN Node Host},",
-						"          Type,",
-						"          Title,",
-						"          SelectedQuality = SELECTED_QUALITY,",
-						"          DeviceType = DEVICE_TYPE,",
-						"          Version = VERSION,",
-						"          Connection = CONNECTION,",
-						"          CommercilizationType = {COMMERCIALIZATION TYPE},",
-						"          DeviceVendor = {Device Vendor},",
-						"          HappinessScore = {Happiness Score},",
-						"          UserId = {User ID},",
-						"          EndTime = {End Time},",
+						"          Country = country,",
+						"          Service = service,",
+						"          ServiceType = service_type,",
+						"          Device = device,",
+						"          Title = title,",
+						"          Isp = isp,",
+						"          CdnHostname = cdn_hostname,",
+						"          CdnPop = cdn_pop,",
+						"          AppReleaseVersion = app_release_version,",
+						"          Browser = browser,",
+						"          Os = os,",
+						"          Player = player,",
+						"          HappinessScore = happiness_score,",
+						"          UserId = user_id,",
+						"          EndTime = end_time,",
 						"          Hash = hash",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
 						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
-						"FilterEmptyHappinessScore derive(Connection = lower(Connection),",
-						"          DeviceVendor = lower(DeviceVendor)) ~> HarmonizeColumn",
-						"HarmonizeColumn alterRow(upsertIf(true())) ~> AlterRow",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
@@ -1487,6 +1553,11 @@
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -2007,145 +2078,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/KustoIptv')]",
 				"[concat(variables('factoryId'), '/pipelines/KustoOtt')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "DataflowCuratedToKusto",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 1,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "OttCuratedToKusto",
-								"type": "DataFlowReference",
-								"parameters": {
-									"sourceFileSystem": {
-										"value": "'@{pipeline().parameters.sourceFileSystem}'",
-										"type": "Expression"
-									},
-									"sourceFolderPath": {
-										"value": "'@{pipeline().parameters.sourceFolderPath}'",
-										"type": "Expression"
-									},
-									"sinkTable": {
-										"value": "'@{pipeline().parameters.sinkTable}'",
-										"type": "Expression"
-									},
-									"logsFileSystem": {
-										"value": "'@{pipeline().parameters.logsFileSystem}'",
-										"type": "Expression"
-									},
-									"logsFolderPath": {
-										"value": "'@{pipeline().parameters.logsFolderPath}'",
-										"type": "Expression"
-									}
-								},
-								"datasetParameters": {
-									"AzureDataLakeSource": {},
-									"KustoSinkReference": {},
-									"KustoSink": {}
-								},
-								"linkedServiceParameters": {
-									"KustoSink": {
-										"linkedService": {
-											"databaseName": {
-												"value": "@pipeline().parameters.sinkDatabase",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							},
-							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
-							},
-							"traceLevel": "Coarse"
-						}
-					},
-					{
-						"name": "SetPipelineOutput",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "DataflowCuratedToKusto",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "pipelineReturnValue",
-							"value": [
-								{
-									"key": "sinkDatabase",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkDatabase"
-									}
-								},
-								{
-									"key": "sinkTable",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkTable"
-									}
-								}
-							],
-							"setSystemVariable": true
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"sourceFileSystem": {
-						"type": "string"
-					},
-					"sourceFolderPath": {
-						"type": "string"
-					},
-					"sinkDatabase": {
-						"type": "string"
-					},
-					"sinkTable": {
-						"type": "string"
-					},
-					"logsFileSystem": {
-						"type": "string"
-					},
-					"logsFolderPath": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Pipelines/OTT"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
 			]
 		}
 	]
