@@ -44,6 +44,10 @@
 						"logsFolderPath": {
 							"value": "@pipeline().parameters.logsFolderPath",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().GroupId",
+							"type": "Expression"
 						}
 					}
 				}
