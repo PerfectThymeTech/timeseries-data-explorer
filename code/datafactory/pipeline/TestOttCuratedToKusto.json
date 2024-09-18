@@ -42,7 +42,7 @@
 							"type": "Expression"
 						},
 						"pipelineId": {
-							"value": "@pipeline().GroupId",
+							"value": "@pipeline().parameters.pipelineId",
 							"type": "Expression"
 						}
 					}
@@ -138,6 +138,9 @@
 			"expectedSinkTable": {
 				"type": "string",
 				"defaultValue": "ott_raw"
+			},
+			"pipelineId": {
+				"type": "string"
 			}
 		},
 		"variables": {

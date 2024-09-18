@@ -40,6 +40,10 @@
 						"logsFolderPath": {
 							"value": "@pipeline().parameters.logsFolderPath",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().parameters.pipelineId",
+							"type": "Expression"
 						}
 					}
 				}
@@ -134,6 +138,9 @@
 			"expectedSinkTable": {
 				"type": "string",
 				"defaultValue": "iptv_raw"
+			},
+			"pipelineId": {
+				"type": "string"
 			}
 		},
 		"variables": {

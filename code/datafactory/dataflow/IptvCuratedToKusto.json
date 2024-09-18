@@ -41,6 +41,10 @@
 			"transformations": [
 				{
 					"name": "ExistingHashes"
+				},
+				{
+					"name": "SelectColumns",
+					"description": "Drop Pipeline ID Column"
 				}
 			],
 			"scriptLines": [
@@ -49,7 +53,8 @@
 				"     sourceFolderPath as string,",
 				"     sinkTable as string,",
 				"     logsFileSystem as string,",
-				"     logsFolderPath as string",
+				"     logsFolderPath as string,",
+				"     pipelineId as string",
 				"}",
 				"source(output(",
 				"          Country as string,",
@@ -108,7 +113,12 @@
 				"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
 				"     negate:true,",
 				"     broadcast: 'auto')~> ExistingHashes",
-				"ExistingHashes sink(allowSchemaDrift: true,",
+				"ExistingHashes select(mapColumn(",
+				"          each(match(name!='PipelineId'))",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+				"SelectColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",

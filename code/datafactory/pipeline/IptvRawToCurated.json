@@ -47,6 +47,10 @@
 							"logsFolderPath": {
 								"value": "'@{pipeline().parameters.logsFolderPath}'",
 								"type": "Expression"
+							},
+							"pipelineId": {
+								"value": "'@{pipeline().parameters.pipelineId}'",
+								"type": "Expression"
 							}
 						}
 					},
@@ -115,6 +119,9 @@
 				"type": "string"
 			},
 			"logsFolderPath": {
+				"type": "string"
+			},
+			"pipelineId": {
 				"type": "string"
 			}
 		},
