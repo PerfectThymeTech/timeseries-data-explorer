@@ -1,6 +1,6 @@
 location    = "germanywestcentral"
 environment = "int"
-prefix      = "sc4"
+prefix      = "mysc4"
 tags        = {}
 
 # Service variables
