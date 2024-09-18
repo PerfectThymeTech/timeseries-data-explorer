@@ -5,6 +5,7 @@ locals {
   resource_providers_to_register = [
     "Microsoft.Authorization",
     "Microsoft.DataFactory",
+    "Microsoft.EventGrid",
     "Microsoft.Insights",
     "Microsoft.KeyVault",
     "Microsoft.Kusto",
