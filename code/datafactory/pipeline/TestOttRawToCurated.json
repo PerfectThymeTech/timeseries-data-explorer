@@ -117,7 +117,7 @@
 			},
 			"sourceFolderPath": {
 				"type": "string",
-				"defaultValue": "ott/8cae7a97-0e13-4e3f-b0a3-4fd70ef9a554"
+				"defaultValue": "ott/9695e536-e225-46de-9ed8-142bd4d10b0b"
 			},
 			"sourceFileName": {
 				"type": "string",
@@ -148,7 +148,8 @@
 				"defaultValue": "ott"
 			},
 			"pipelineId": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 			}
 		},
 		"variables": {
