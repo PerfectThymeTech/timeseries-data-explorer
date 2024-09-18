@@ -21,6 +21,10 @@
 			"minimumLift": {
 				"type": "float",
 				"value": 5
+			},
+			"minimumUsersRatio": {
+				"type": "float",
+				"value": 0.1
 			}
 		}
 	},
