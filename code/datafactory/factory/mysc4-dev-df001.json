@@ -5,6 +5,10 @@
 			"happinessThreshold": {
 				"type": "float",
 				"value": 0.8
+			},
+			"movingWindowInMinutes": {
+				"type": "float",
+				"value": 30
 			}
 		}
 	},
