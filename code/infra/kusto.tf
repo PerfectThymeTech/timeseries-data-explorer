@@ -21,7 +21,6 @@ resource "azurerm_kusto_cluster" "kusto_cluster" {
   auto_stop_enabled                  = var.kusto_cluster_auto_stop_enabled
   disk_encryption_enabled            = true
   double_encryption_enabled          = true
-  language_extensions                = var.kusto_cluster_language_extensions
   outbound_network_access_restricted = true
   # optimized_auto_scale {
   #   minimum_instances =
@@ -32,6 +31,14 @@ resource "azurerm_kusto_cluster" "kusto_cluster" {
   purge_enabled                 = var.kusto_cluster_purge_enabled
   streaming_ingestion_enabled   = var.kusto_cluster_streaming_ingestion_enabled
   trusted_external_tenants      = []
+
+  dynamic "language_extensions" {
+    for_each = var.kusto_cluster_language_extensions
+    content {
+      name  = language_extensions.name
+      image = language_extensions.image
+    }
+  }
 }
 
 resource "azurerm_kusto_database" "kusto_database" {
