@@ -5,7 +5,7 @@
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://sc4devstg001.dfs.core.windows.net/"
+			"url": "https://mysc4devstg001.dfs.core.windows.net/"
 		},
 		"connectVia": {
 			"referenceName": "IntegrationRuntime001",
