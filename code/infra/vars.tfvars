@@ -52,8 +52,8 @@ kusto_cluster_sku = {
 }
 kusto_cluster_language_extensions = [
   {
-    image = "PYTHON"
-    name  = "Python3_10_8"
+    name  = "PYTHON"
+    image = "Python3_10_8"
   }
 ]
 kusto_cluster_auto_stop_enabled           = false
