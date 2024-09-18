@@ -35,8 +35,8 @@ resource "azurerm_kusto_cluster" "kusto_cluster" {
   dynamic "language_extensions" {
     for_each = var.kusto_cluster_language_extensions
     content {
-      name  = language_extensions.name
-      image = language_extensions.image
+      name  = language_extensions.value.name
+      image = language_extensions.value.image
     }
   }
 }
