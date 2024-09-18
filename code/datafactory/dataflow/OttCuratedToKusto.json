@@ -41,6 +41,10 @@
 			"transformations": [
 				{
 					"name": "ExistingHashes"
+				},
+				{
+					"name": "FilterRows",
+					"description": "Filter based on pipeline IDs."
 				}
 			],
 			"scriptLines": [
@@ -81,9 +85,10 @@
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",
 				"     store: 'azuredataexplorer') ~> KustoSinkReference",
-				"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+				"FilterRows, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
 				"     negate:true,",
 				"     broadcast: 'auto')~> ExistingHashes",
+				"AzureDataLakeSource filter(ERROR_FUNCTION('')) ~> FilterRows",
 				"ExistingHashes sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
