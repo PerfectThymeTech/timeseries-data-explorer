@@ -13,6 +13,10 @@
 			"minimumNumberOfUsersPerWindow": {
 				"type": "float",
 				"value": 10
+			},
+			"minimumPlays": {
+				"type": "float",
+				"value": 20
 			}
 		}
 	},
