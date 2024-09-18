@@ -46,7 +46,7 @@
 							"type": "Expression"
 						},
 						"pipelineId": {
-							"value": "@pipeline().GroupId",
+							"value": "@pipeline().parameters.pipelineId",
 							"type": "Expression"
 						}
 					}
@@ -146,6 +146,9 @@
 			"expectedSinkFolderPath": {
 				"type": "string",
 				"defaultValue": "ott"
+			},
+			"pipelineId": {
+				"type": "string"
 			}
 		},
 		"variables": {
