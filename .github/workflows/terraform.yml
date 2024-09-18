@@ -28,7 +28,7 @@ jobs:
     name: "Dev"
     with:
       environment: "dev"
-      config: "SharedTenant"
+      config: "PerfectThymeTech"
       terraform_version: "1.9.5"
       node_version: 20
       working_directory: "./code/infra"
@@ -44,7 +44,7 @@ jobs:
     needs: [terraform_dev]
     with:
       environment: "dev"
-      config: "SharedTenant"
+      config: "PerfectThymeTech"
       terraform_version: "1.9.5"
       node_version: 20
       working_directory: "./code/infra"
