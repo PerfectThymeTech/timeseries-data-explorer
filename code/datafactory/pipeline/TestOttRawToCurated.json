@@ -117,7 +117,7 @@
 			},
 			"sourceFolderPath": {
 				"type": "string",
-				"defaultValue": "ott/3c1bde97-a46a-4bba-ac62-dae9bb15fbc6"
+				"defaultValue": "\"ott/e0d35983-773b-4918-ae74-96dfb4682e32"
 			},
 			"sourceFileName": {
 				"type": "string",
