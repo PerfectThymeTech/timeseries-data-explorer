@@ -6,10 +6,6 @@
 		"type": "AzureBlobFS",
 		"typeProperties": {
 			"url": "https://mysc4devstg001.dfs.core.windows.net/"
-		},
-		"connectVia": {
-			"referenceName": "IntegrationRuntime001",
-			"type": "IntegrationRuntimeReference"
 		}
 	}
 }
