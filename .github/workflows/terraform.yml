@@ -32,8 +32,8 @@ jobs:
       terraform_version: "1.9.5"
       node_version: 20
       working_directory: "./code/infra"
-      tenant_id: "572cf1ec-3f90-49a2-896f-ab2fa36ca0d3"
-      subscription_id: "be25820a-df86-4794-9e95-6a45cd5c0941"
+      tenant_id: "37963dd4-f4e6-40f8-a7d6-24b97919e452"
+      subscription_id: "1fdab118-1638-419a-8b12-06c9543714a0"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
@@ -48,8 +48,8 @@ jobs:
       terraform_version: "1.9.5"
       node_version: 20
       working_directory: "./code/infra"
-      tenant_id: "572cf1ec-3f90-49a2-896f-ab2fa36ca0d3"
-      subscription_id: "be25820a-df86-4794-9e95-6a45cd5c0941"
+      tenant_id: "37963dd4-f4e6-40f8-a7d6-24b97919e452"
+      subscription_id: "1fdab118-1638-419a-8b12-06c9543714a0"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
