@@ -11,7 +11,7 @@
 		"annotations": [],
 		"type": "AzureDataExplorer",
 		"typeProperties": {
-			"endpoint": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net",
+			"endpoint": "https://mysc4-dev-kusto001.germanywestcentral.kusto.windows.net",
 			"database": "@linkedService().databaseName"
 		},
 		"connectVia": {
