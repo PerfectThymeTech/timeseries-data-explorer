@@ -1,0 +1,2166 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mysc4-dev-df001"
+		},
+		"AzureDataExplorer_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
+		},
+		"AzureDataExplorer_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@linkedService().databaseName"
+		},
+		"AzureDataLakeStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sc4devstg001.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SetFileSystem",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "fileSystem",
+							"value": {
+								"value": "@first(array(split(pipeline().parameters.uploadSourceFolderPath, '/')))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetFolderPath",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "folderPath",
+							"value": {
+								"value": "@join(skip(array(split(pipeline().parameters.uploadSourceFolderPath, '/')), 1), '/')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetFileName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "fileName",
+							"value": {
+								"value": "@pipeline().parameters.uploadSourceFileName",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "SetFileSystem",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetFileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "fileSystem",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('fileSystem')"
+									}
+								},
+								{
+									"key": "folderPath",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('folderPath')"
+									}
+								},
+								{
+									"key": "fileName",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('fileName')"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"fileSystem": {
+						"type": "String"
+					},
+					"folderPath": {
+						"type": "String"
+					},
+					"fileName": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataExplorer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Explorer",
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "operationaldb"
+					}
+				},
+				"annotations": [],
+				"type": "AzureDataExplorer",
+				"typeProperties": {
+					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
+					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Data Lake Storage",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Azure Key Vault",
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IntegrationRuntime001')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/KustoIptv')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "IptvAvgHappinessScoreKusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:20:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.kustoDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"kustoDatabase": {
+						"type": "string"
+					},
+					"iptvHappinessTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/Kusto"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/KustoOtt')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "OttAvgHappinessScoreKusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:20:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.kustoDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"kustoDatabase": {
+						"type": "string"
+					},
+					"ottHappinessTable": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/Kusto"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ReferenceToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "HappinessThresholdToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "SetVariableHappinessThreshold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMovingWindowInMinutes",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumNumberOfUsersPerWindow",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumPlays",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumLift",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "SetVariableMinimumUsersRatio",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"happiness\", value = real(', variables('happinessThreshold'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "SetVariableHappinessThreshold",
+						"description": "Set Variable \"happinessThreshold\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "happinessThreshold",
+							"value": {
+								"value": "@string(pipeline().globalParameters.happinessThreshold)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMovingWindowInMinutes",
+						"description": "Set Variable \"movingWindowInMinutes\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "movingWindowInMinutes",
+							"value": {
+								"value": "@string(pipeline().globalParameters.movingWindowInMinutes)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumNumberOfUsersPerWindow",
+						"description": "Set Variable \"minimumNumberOfUsersPerWindow\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumNumberOfUsersPerWindow",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumNumberOfUsersPerWindow)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "MovingWindowInMinutesToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "HappinessThresholdToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"movingWindowInMinutes\", value = real(', variables('movingWindowInMinutes'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MovingWindowInMinutesToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumNumberOfUsersPerWindow\", value = real(', variables('minimumNumberOfUsersPerWindow'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumPlays",
+						"description": "Set Variable \"minimumPlays\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumPlays",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumPlays)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumLift",
+						"description": "Set Variable \"minimumLift\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumLift",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumLift)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetVariableMinimumUsersRatio",
+						"description": "Set Variable \"minimumUsersRatio\"",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "minimumUsersRatio",
+							"value": {
+								"value": "@string(pipeline().globalParameters.minimumUsersRatio)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "MinimumPlaysToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumNumberOfUsersPerWindowToKusto_copy1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumPlays\", value = real(', variables('minimumPlays'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumLiftToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumPlaysToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumLift\", value = real(', variables('minimumLift'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "MinimumUsersRatioToKusto",
+						"description": "Insert Reference data into Kusto",
+						"type": "AzureDataExplorerCommand",
+						"dependsOn": [
+							{
+								"activity": "MinimumLiftToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"command": {
+								"value": "@concat('.set-or-append ', pipeline().parameters.sinkTable, ' <| print name = \"minimumUsersRatio\", value = real(', variables('minimumUsersRatio'), '), timestamp = now()')",
+								"type": "Expression"
+							},
+							"commandTimeout": "00:10:00"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDataExplorer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"databaseName": {
+									"value": "@pipeline().parameters.sinkDatabase",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"happinessThreshold": {
+						"type": "String"
+					},
+					"movingWindowInMinutes": {
+						"type": "String"
+					},
+					"minimumNumberOfUsersPerWindow": {
+						"type": "String"
+					},
+					"minimumPlays": {
+						"type": "String"
+					},
+					"minimumLift": {
+						"type": "String"
+					},
+					"minimumUsersRatio": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/ReferenceData"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestParseBlobTrigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ParseBlobTrigger",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "ParseBlobTrigger",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"uploadSourceFolderPath": {
+									"value": "@pipeline().parameters.uploadSourceFolderPath",
+									"type": "Expression"
+								},
+								"uploadSourceFileName": {
+									"value": "@pipeline().parameters.uploadSourceFileName",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"uploadSourceFolderPath": {
+						"type": "string"
+					},
+					"uploadSourceFileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Tests/General"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParseBlobTrigger')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BinarySink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"fileSystem": {
+						"type": "string"
+					},
+					"folderPath": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().folderPath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().fileSystem",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BinarySource')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"fileSystem": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": {
+							"value": "@dataset().fileSystem",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "IPTV"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSink",
+							"description": "Sink dataset in Kusto",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "ExistingHashes"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFileSystem as string,",
+						"     sourceFolderPath as string,",
+						"     sinkTable as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          Country as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Topology2 as string,",
+						"          Topology3 as string,",
+						"          Topology4 as string,",
+						"          Topology5 as string,",
+						"          Title as string,",
+						"          StbModel as string,",
+						"          StbManufacturer as string,",
+						"          StbSwVersion as string,",
+						"          StreamingProtocol as string,",
+						"          CdnHostname as string,",
+						"          CdnPop as string,",
+						"          ChannelName as string,",
+						"          HappinessScore as float,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
+						"source(output(",
+						"          Country as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Topology2 as string,",
+						"          Topology3 as string,",
+						"          Topology4 as string,",
+						"          Topology5 as string,",
+						"          Title as string,",
+						"          StbModel as string,",
+						"          StbManufacturer as string,",
+						"          StbSwVersion as string,",
+						"          StreamingProtocol as string,",
+						"          CdnNodeHostname as string,",
+						"          CdnPop as string,",
+						"          ChannelName as string,",
+						"          HappinessScore as double,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string,",
+						"          CdnHostname as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer',",
+						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataflow to copy IPTV data from Raw to Curated",
+				"folder": {
+					"name": "IPTV"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSink",
+							"description": "Sink dataset in Azure Data Lake",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "DistinctRows"
+						},
+						{
+							"name": "RenameColumns",
+							"description": "Rename Columns"
+						},
+						{
+							"name": "FilterEmptyHappinessScore",
+							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "AlterRow"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFolderPath as string,",
+						"     sourceFileName as string,",
+						"     sourceFileSystem as string,",
+						"     sinkFileSystem as string,",
+						"     sinkFolderPath as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          country as string,",
+						"          service as string,",
+						"          topology_5 as string,",
+						"          topology_4 as string,",
+						"          topology_3 as string,",
+						"          topology_2 as string,",
+						"          title as string,",
+						"          service_type as string,",
+						"          stb_model as string,",
+						"          stb_manufacturer as string,",
+						"          stb_sw_version as string,",
+						"          streaming_protocol as string,",
+						"          cdn_hostname as string,",
+						"          cdn_pop as string,",
+						"          channel_name as string,",
+						"          happiness_score as float,",
+						"          user_id as string,",
+						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath),",
+						"     fileName: ($sourceFileName),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+						"DistinctRows select(mapColumn(",
+						"          Country = country,",
+						"          Service = service,",
+						"          ServiceType = service_type,",
+						"          Topology2 = topology_2,",
+						"          Topology3 = topology_3,",
+						"          Topology4 = topology_4,",
+						"          Topology5 = topology_5,",
+						"          Title = title,",
+						"          StbModel = stb_model,",
+						"          StbManufacturer = stb_manufacturer,",
+						"          StbSwVersion = stb_sw_version,",
+						"          StreamingProtocol = streaming_protocol,",
+						"          CdnHostname = cdn_hostname,",
+						"          CdnPop = cdn_pop,",
+						"          ChannelName = channel_name,",
+						"          HappinessScore = happiness_score,",
+						"          UserId = user_id,",
+						"          EndTime = end_time,",
+						"          Hash = hash",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sinkFileSystem),",
+						"     folderPath: ($sinkFolderPath),",
+						"     mergeSchema: true,",
+						"     autoCompact: true,",
+						"     optimizedWrite: true,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['Hash'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath),",
+						"     partitionBy('key',",
+						"          0,",
+						"          Country",
+						"     )) ~> AzureDataLakeSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "OTT"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSinkReference",
+							"description": "Kusto Sink Reference Dataset"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataExplorer",
+								"type": "LinkedServiceReference"
+							},
+							"name": "KustoSink",
+							"description": "Sink dataset in Kusto",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "ExistingHashes"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFileSystem as string,",
+						"     sourceFolderPath as string,",
+						"     sinkTable as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          Country as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Device as string,",
+						"          Title as string,",
+						"          Isp as string,",
+						"          CdnHostname as string,",
+						"          CdnPop as string,",
+						"          AppReleaseVersion as string,",
+						"          Browser as string,",
+						"          Os as string,",
+						"          Player as string,",
+						"          HappinessScore as float,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
+						"source(output(",
+						"          Country as string,",
+						"          Service as string,",
+						"          ServiceType as string,",
+						"          Device as string,",
+						"          Title as string,",
+						"          Isp as string,",
+						"          CdnNodeHostname as string,",
+						"          CdnPop as string,",
+						"          AppReleaseVersion as string,",
+						"          Browser as string,",
+						"          Os as string,",
+						"          Player as string,",
+						"          HappinessScore as double,",
+						"          UserId as string,",
+						"          EndTime as timestamp,",
+						"          Hash as string,",
+						"          CdnHostname as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer') ~> KustoSinkReference",
+						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistingHashes",
+						"ExistingHashes sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: ($sinkTable),",
+						"     store: 'azuredataexplorer',",
+						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataExplorer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OttRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataflow to copy OTT data from Raw to Curated",
+				"folder": {
+					"name": "OTT"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSource",
+							"description": "Source dataset in Azure Data Lake"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "AzureDataLakeSink",
+							"description": "Sink dataset in Azure Data Lake",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureDataLakeStorage",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"transformations": [
+						{
+							"name": "DistinctRows"
+						},
+						{
+							"name": "RenameColumns",
+							"description": "Rename Columns"
+						},
+						{
+							"name": "FilterEmptyHappinessScore",
+							"description": "Filter Empty Happiness Score Rows"
+						},
+						{
+							"name": "AlterRow"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     sourceFolderPath as string,",
+						"     sourceFileName as string,",
+						"     sourceFileSystem as string,",
+						"     sinkFileSystem as string,",
+						"     sinkFolderPath as string,",
+						"     logsFileSystem as string,",
+						"     logsFolderPath as string",
+						"}",
+						"source(output(",
+						"          country as string,",
+						"          service as string,",
+						"          device as string,",
+						"          title as string,",
+						"          service_type as string,",
+						"          isp as string,",
+						"          cdn_hostname as string,",
+						"          cdn_pop as string,",
+						"          app_release_version as string,",
+						"          browser as string,",
+						"          os as string,",
+						"          player as string,",
+						"          happiness_score as float,",
+						"          user_id as string,",
+						"          end_time as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: ($sourceFileSystem),",
+						"     folderPath: ($sourceFolderPath),",
+						"     fileName: ($sourceFileName),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> AzureDataLakeSource",
+						"AzureDataLakeSource aggregate(groupBy(hash = sha2(256,columns())),",
+						"     each(match(true()), $$ = first($$))) ~> DistinctRows",
+						"DistinctRows select(mapColumn(",
+						"          Country = country,",
+						"          Service = service,",
+						"          ServiceType = service_type,",
+						"          Device = device,",
+						"          Title = title,",
+						"          Isp = isp,",
+						"          CdnHostname = cdn_hostname,",
+						"          CdnPop = cdn_pop,",
+						"          AppReleaseVersion = app_release_version,",
+						"          Browser = browser,",
+						"          Os = os,",
+						"          Player = player,",
+						"          HappinessScore = happiness_score,",
+						"          UserId = user_id,",
+						"          EndTime = end_time,",
+						"          Hash = hash",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: ($sinkFileSystem),",
+						"     folderPath: ($sinkFolderPath),",
+						"     mergeSchema: true,",
+						"     autoCompact: true,",
+						"     optimizedWrite: true,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['Hash'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_fileSystem: ($logsFileSystem),",
+						"     assertFailure_folderPath: ($logsFolderPath),",
+						"     partitionBy('key',",
+						"          0,",
+						"          Country",
+						"     )) ~> AzureDataLakeSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataflowCuratedToKusto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "IptvCuratedToKusto",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sinkTable": {
+										"value": "'@{pipeline().parameters.sinkTable}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
+									"KustoSink": {}
+								},
+								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
+									"KustoSink": {
+										"linkedService": {
+											"databaseName": {
+												"value": "@pipeline().parameters.sinkDatabase",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkDatabase",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkDatabase"
+									}
+								},
+								{
+									"key": "sinkTable",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkTable"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvRawToCurated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Pipeline to move IPTV data from Raw to curated",
+				"activities": [
+					{
+						"name": "DataflowRawToCurated",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "IptvRawToCurated",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sourceFileName": {
+										"value": "'@{pipeline().parameters.sourceFileName}'",
+										"type": "Expression"
+									},
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sinkFileSystem": {
+										"value": "'@{pipeline().parameters.sinkFileSystem}'",
+										"type": "Expression"
+									},
+									"sinkFolderPath": {
+										"value": "'@{pipeline().parameters.sinkFolderPath}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"AzureDataLakeSink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowRawToCurated",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkFileSystem",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkFileSystem"
+									}
+								},
+								{
+									"key": "sinkFolderPath",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkFolderPath"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sourceFileName": {
+						"type": "string"
+					},
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sinkFileSystem": {
+						"type": "string"
+					},
+					"sinkFolderPath": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IptvUploadToRaw')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Pipeline to move IPTV data from Upload to Raw",
+				"activities": [
+					{
+						"name": "CopyUploadToRaw",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "SetVariableSinkFolderPath",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": {
+										"value": "@pipeline().parameters.sourceFolderPath",
+										"type": "Expression"
+									},
+									"wildcardFileName": {
+										"value": "@pipeline().parameters.sourceFileName",
+										"type": "Expression"
+									},
+									"deleteFilesAfterCompletion": true
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"logSettings": {
+								"enableCopyActivityLog": true,
+								"copyActivityLogSettings": {
+									"logLevel": "Warning",
+									"enableReliableLogging": false
+								},
+								"logLocationSettings": {
+									"linkedServiceName": {
+										"referenceName": "AzureDataLakeStorage",
+										"type": "LinkedServiceReference"
+									},
+									"path": {
+										"value": "@concat(pipeline().parameters.logsFileSystem, '/', pipeline().parameters.logsFolderPath)",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "BinarySource",
+								"type": "DatasetReference",
+								"parameters": {
+									"fileSystem": {
+										"value": "@pipeline().parameters.sourceFileSystem",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "BinarySink",
+								"type": "DatasetReference",
+								"parameters": {
+									"fileSystem": {
+										"value": "@pipeline().parameters.sinkFileSystem",
+										"type": "Expression"
+									},
+									"folderPath": {
+										"value": "@variables('sinkFolderPath')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "CopyUploadToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkFileSystem",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkFileSystem"
+									}
+								},
+								{
+									"key": "sinkFolderPath",
+									"value": {
+										"type": "Expression",
+										"content": "@variables('sinkFolderPath')"
+									}
+								},
+								{
+									"key": "sinkFileName",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sourceFileName"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					},
+					{
+						"name": "SetVariableSinkFolderPath",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "sinkFolderPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sourceFileName": {
+						"type": "string"
+					},
+					"sinkFileSystem": {
+						"type": "string"
+					},
+					"sinkFolderPath": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"sinkFolderPath": {
+						"type": "String"
+					},
+					"expectedSinkFolderPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/IPTV"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/BinarySource')]",
+				"[concat(variables('factoryId'), '/datasets/BinarySink')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/KustoMainPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "KustoIptv",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "KustoIptv",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"kustoDatabase": {
+									"value": "@variables('kustoDatabase')",
+									"type": "Expression"
+								},
+								"iptvHappinessTable": {
+									"value": "@variables('iptvHappinessTable')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "KustoOtt",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "KustoOtt",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"kustoDatabase": {
+									"value": "@variables('kustoDatabase')",
+									"type": "Expression"
+								},
+								"ottHappinessTable": {
+									"value": "@variables('ottHappinessTable')",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"kustoDatabase": {
+						"type": "String",
+						"defaultValue": "operationaldb"
+					},
+					"iptvHappinessTable": {
+						"type": "String",
+						"defaultValue": "iptv_happiness"
+					},
+					"ottHappinessTable": {
+						"type": "String",
+						"defaultValue": "ott_happiness"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/Kusto"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/KustoIptv')]",
+				"[concat(variables('factoryId'), '/pipelines/KustoOtt')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataflowCuratedToKusto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "OttCuratedToKusto",
+								"type": "DataFlowReference",
+								"parameters": {
+									"sourceFileSystem": {
+										"value": "'@{pipeline().parameters.sourceFileSystem}'",
+										"type": "Expression"
+									},
+									"sourceFolderPath": {
+										"value": "'@{pipeline().parameters.sourceFolderPath}'",
+										"type": "Expression"
+									},
+									"sinkTable": {
+										"value": "'@{pipeline().parameters.sinkTable}'",
+										"type": "Expression"
+									},
+									"logsFileSystem": {
+										"value": "'@{pipeline().parameters.logsFileSystem}'",
+										"type": "Expression"
+									},
+									"logsFolderPath": {
+										"value": "'@{pipeline().parameters.logsFolderPath}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"AzureDataLakeSource": {},
+									"KustoSinkReference": {},
+									"KustoSink": {}
+								},
+								"linkedServiceParameters": {
+									"KustoSinkReference": {
+										"linkedService": {
+											"databaseName": "operationaldb"
+										}
+									},
+									"KustoSink": {
+										"linkedService": {
+											"databaseName": {
+												"value": "@pipeline().parameters.sinkDatabase",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Coarse"
+						}
+					},
+					{
+						"name": "SetPipelineOutput",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "DataflowCuratedToKusto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pipelineReturnValue",
+							"value": [
+								{
+									"key": "sinkDatabase",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkDatabase"
+									}
+								},
+								{
+									"key": "sinkTable",
+									"value": {
+										"type": "Expression",
+										"content": "@pipeline().parameters.sinkTable"
+									}
+								}
+							],
+							"setSystemVariable": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"sourceFileSystem": {
+						"type": "string"
+					},
+					"sourceFolderPath": {
+						"type": "string"
+					},
+					"sinkDatabase": {
+						"type": "string"
+					},
+					"sinkTable": {
+						"type": "string"
+					},
+					"logsFileSystem": {
+						"type": "string"
+					},
+					"logsFolderPath": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pipelines/OTT"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]"
+			]
+		}
+	]
+}
