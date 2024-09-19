@@ -1,0 +1,32 @@
+{
+	"name": "tsde-int-df001",
+	"properties": {
+		"globalParameters": {
+			"happinessThreshold": {
+				"type": "float",
+				"value": 0.8
+			},
+			"movingWindowInMinutes": {
+				"type": "float",
+				"value": 30
+			},
+			"minimumNumberOfUsersPerWindow": {
+				"type": "float",
+				"value": 10
+			},
+			"minimumPlays": {
+				"type": "float",
+				"value": 20
+			},
+			"minimumLift": {
+				"type": "float",
+				"value": 5
+			},
+			"minimumUsersRatio": {
+				"type": "float",
+				"value": 0.1
+			}
+		}
+	},
+	"location": "germanywestcentral"
+}
