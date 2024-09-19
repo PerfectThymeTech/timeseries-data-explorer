@@ -44,6 +44,10 @@
 						"logsFolderPath": {
 							"value": "@pipeline().parameters.logsFolderPath",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().parameters.pipelineId",
+							"type": "Expression"
 						}
 					}
 				}
@@ -113,7 +117,7 @@
 			},
 			"sourceFolderPath": {
 				"type": "string",
-				"defaultValue": "iptv/4614736d-2afa-4739-80a7-d6b449958736"
+				"defaultValue": "iptv/ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 			},
 			"sourceFileName": {
 				"type": "string",
@@ -142,6 +146,10 @@
 			"expectedSinkFolderPath": {
 				"type": "string",
 				"defaultValue": "iptv"
+			},
+			"pipelineId": {
+				"type": "string",
+				"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 			}
 		},
 		"variables": {

@@ -47,12 +47,16 @@
 							"logsFolderPath": {
 								"value": "'@{pipeline().parameters.logsFolderPath}'",
 								"type": "Expression"
+							},
+							"pipelineId": {
+								"value": "'@{pipeline().parameters.pipelineId}'",
+								"type": "Expression"
 							}
 						}
 					},
-					"integrationRuntime": {
-						"referenceName": "IntegrationRuntime001",
-						"type": "IntegrationRuntimeReference"
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
 					},
 					"traceLevel": "Coarse"
 				}
@@ -115,6 +119,9 @@
 				"type": "string"
 			},
 			"logsFolderPath": {
+				"type": "string"
+			},
+			"pipelineId": {
 				"type": "string"
 			}
 		},

@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"command": {
-						"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore()')",
+						"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore(', pipeline().parameters.timestamp, ')')",
 						"type": "Expression"
 					},
 					"commandTimeout": "00:20:00"
@@ -39,6 +39,9 @@
 			},
 			"iptvHappinessTable": {
 				"type": "String"
+			},
+			"timestamp": {
+				"type": "string"
 			}
 		},
 		"folder": {

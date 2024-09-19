@@ -1,6 +1,24 @@
 locals {
   prefix = "${lower(var.prefix)}-${var.environment}"
 
+  # Resource providers to register
+  resource_providers_to_register = [
+    "Microsoft.Authorization",
+    "Microsoft.DataFactory",
+    "Microsoft.EventGrid",
+    "Microsoft.Insights",
+    "Microsoft.KeyVault",
+    "Microsoft.Kusto",
+    "Microsoft.Management",
+    "Microsoft.Network",
+    "Microsoft.OperationsManagement",
+    "Microsoft.OperationalInsights",
+    "Microsoft.Resources",
+    "Microsoft.Storage",
+    "Microsoft.Security",
+    "Microsoft.SecurityInsights",
+  ]
+
   default_template_variables = {
     data_factory_name              = azurerm_data_factory.data_factory.name
     key_vault_uri                  = azurerm_key_vault.key_vault.vault_uri

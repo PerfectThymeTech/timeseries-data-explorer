@@ -1,4 +1,8 @@
 // Drop tables
+.drop table ott_ingest
+
+.drop table iptv_ingest
+
 .drop table ott_raw
 
 .drop table iptv_raw

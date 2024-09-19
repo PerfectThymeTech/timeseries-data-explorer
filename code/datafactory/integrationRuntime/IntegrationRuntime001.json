@@ -2,7 +2,6 @@
 	"name": "IntegrationRuntime001",
 	"properties": {
 		"type": "Managed",
-		"description": "Integration Runtime 001",
 		"typeProperties": {
 			"computeProperties": {
 				"location": "AutoResolve",
