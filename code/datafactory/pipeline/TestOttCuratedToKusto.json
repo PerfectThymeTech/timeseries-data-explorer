@@ -121,7 +121,7 @@
 			},
 			"sinkTable": {
 				"type": "string",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
 			},
 			"logsFileSystem": {
 				"type": "string",
