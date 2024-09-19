@@ -137,7 +137,7 @@
 			},
 			"expectedSinkTable": {
 				"type": "string",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
 			},
 			"pipelineId": {
 				"type": "string",
