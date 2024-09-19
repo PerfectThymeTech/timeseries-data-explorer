@@ -5,7 +5,7 @@
 		"annotations": [],
 		"type": "AzureKeyVault",
 		"typeProperties": {
-			"baseUrl": "https://mysc4-dev-vault001.vault.azure.net/"
+			"baseUrl": "https://tsde-int-vault001.vault.azure.net/"
 		}
 	}
 }

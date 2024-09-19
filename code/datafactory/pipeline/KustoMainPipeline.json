@@ -24,6 +24,10 @@
 						"iptvHappinessTable": {
 							"value": "@variables('iptvHappinessTable')",
 							"type": "Expression"
+						},
+						"timestamp": {
+							"value": "@pipeline().parameters.timestamp",
+							"type": "Expression"
 						}
 					}
 				}
@@ -50,11 +54,20 @@
 						"ottHappinessTable": {
 							"value": "@variables('ottHappinessTable')",
 							"type": "Expression"
+						},
+						"timestamp": {
+							"value": "@pipeline().parameters.timestamp",
+							"type": "Expression"
 						}
 					}
 				}
 			}
 		],
+		"parameters": {
+			"timestamp": {
+				"type": "string"
+			}
+		},
 		"variables": {
 			"kustoDatabase": {
 				"type": "String",

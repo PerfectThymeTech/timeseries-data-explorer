@@ -140,7 +140,8 @@
 				"defaultValue": "ott_raw"
 			},
 			"pipelineId": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 			}
 		},
 		"variables": {

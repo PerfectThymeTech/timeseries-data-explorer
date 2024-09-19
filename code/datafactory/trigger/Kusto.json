@@ -3,22 +3,27 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
-		"pipelines": [
-			{
-				"pipelineReference": {
-					"referenceName": "KustoMainPipeline",
-					"type": "PipelineReference"
-				}
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "KustoMainPipeline",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"timestamp": "@trigger().outputs.windowEndTime"
 			}
-		],
-		"type": "ScheduleTrigger",
+		},
+		"type": "TumblingWindowTrigger",
 		"typeProperties": {
-			"recurrence": {
-				"frequency": "Minute",
-				"interval": 15,
-				"startTime": "2024-05-16T00:03:00",
-				"timeZone": "W. Europe Standard Time"
-			}
+			"frequency": "Minute",
+			"interval": 60,
+			"startTime": "2024-01-01T00:00:00Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 2,
+			"retryPolicy": {
+				"count": 1,
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
 		}
 	}
 }
