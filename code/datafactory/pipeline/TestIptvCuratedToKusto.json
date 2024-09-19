@@ -121,7 +121,7 @@
 			},
 			"sinkTable": {
 				"type": "string",
-				"defaultValue": "iptv_raw"
+				"defaultValue": "iptv_ingest"
 			},
 			"logsFileSystem": {
 				"type": "string",
@@ -137,7 +137,7 @@
 			},
 			"expectedSinkTable": {
 				"type": "string",
-				"defaultValue": "iptv_raw"
+				"defaultValue": "iptv_ingest"
 			},
 			"pipelineId": {
 				"type": "string",
