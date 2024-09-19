@@ -1,6 +1,6 @@
 location    = "germanywestcentral"
 environment = "dev"
-prefix      = "sc4-01"
+prefix      = "mysc4"
 tags        = {}
 
 # Service variables
@@ -50,7 +50,12 @@ kusto_cluster_sku = {
   name     = "Standard_E2ads_v5",
   capacity = 2
 }
-kusto_cluster_language_extensions         = ["PYTHON_3.10.8"]
+kusto_cluster_language_extensions = [
+  {
+    name  = "PYTHON"
+    image = "Python3_10_8"
+  }
+]
 kusto_cluster_auto_stop_enabled           = false
 kusto_cluster_purge_enabled               = false
 kusto_cluster_streaming_ingestion_enabled = false

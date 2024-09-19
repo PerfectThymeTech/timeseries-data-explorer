@@ -45,6 +45,10 @@
 				},
 				{
 					"name": "AlterRow"
+				},
+				{
+					"name": "AddColumns",
+					"description": "Add static pipeline ID column."
 				}
 			],
 			"scriptLines": [
@@ -55,7 +59,8 @@
 				"     sinkFileSystem as string,",
 				"     sinkFolderPath as string,",
 				"     logsFileSystem as string,",
-				"     logsFolderPath as string",
+				"     logsFolderPath as string,",
+				"     pipelineId as string",
 				"}",
 				"source(output(",
 				"          country as string,",
@@ -108,8 +113,9 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-				"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+				"AddColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 				"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+				"RenameColumns derive(PipelineId = $pipelineId) ~> AddColumns",
 				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delta',",
@@ -134,7 +140,8 @@
 				"     assertFailure_folderPath: ($logsFolderPath),",
 				"     partitionBy('key',",
 				"          0,",
-				"          Country",
+				"          Country,",
+				"          PipelineId",
 				"     )) ~> AzureDataLakeSink"
 			]
 		}

@@ -44,6 +44,10 @@
 						"logsFolderPath": {
 							"value": "@pipeline().parameters.logsFolderPath",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().parameters.pipelineId",
+							"type": "Expression"
 						}
 					}
 				}
@@ -113,7 +117,7 @@
 			},
 			"sourceFolderPath": {
 				"type": "string",
-				"defaultValue": "ott/a44a15d8-7148-47e5-bf8b-e1d25c5d1935"
+				"defaultValue": "ott/9695e536-e225-46de-9ed8-142bd4d10b0b"
 			},
 			"sourceFileName": {
 				"type": "string",
@@ -142,6 +146,10 @@
 			"expectedSinkFolderPath": {
 				"type": "string",
 				"defaultValue": "ott"
+			},
+			"pipelineId": {
+				"type": "string",
+				"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 			}
 		},
 		"variables": {

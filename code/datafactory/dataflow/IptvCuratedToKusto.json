@@ -14,14 +14,6 @@
 					},
 					"name": "AzureDataLakeSource",
 					"description": "Source dataset in Azure Data Lake"
-				},
-				{
-					"linkedService": {
-						"referenceName": "AzureDataExplorer",
-						"type": "LinkedServiceReference"
-					},
-					"name": "KustoSinkReference",
-					"description": "Kusto Sink Reference Dataset"
 				}
 			],
 			"sinks": [
@@ -40,7 +32,12 @@
 			],
 			"transformations": [
 				{
-					"name": "ExistingHashes"
+					"name": "SelectColumns",
+					"description": "Drop Pipeline ID Column"
+				},
+				{
+					"name": "FilterRows",
+					"description": "Filter based on pipeline IDs."
 				}
 			],
 			"scriptLines": [
@@ -49,7 +46,8 @@
 				"     sourceFolderPath as string,",
 				"     sinkTable as string,",
 				"     logsFileSystem as string,",
-				"     logsFolderPath as string",
+				"     logsFolderPath as string,",
+				"     pipelineId as string",
 				"}",
 				"source(output(",
 				"          Country as string,",
@@ -70,7 +68,8 @@
 				"          HappinessScore as float,",
 				"          UserId as string,",
 				"          EndTime as timestamp,",
-				"          Hash as string",
+				"          Hash as string,",
+				"          PipelineId as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -78,42 +77,17 @@
 				"     format: 'delta',",
 				"     fileSystem: ($sourceFileSystem),",
 				"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-				"source(output(",
-				"          Country as string,",
-				"          Service as string,",
-				"          ServiceType as string,",
-				"          Topology2 as string,",
-				"          Topology3 as string,",
-				"          Topology4 as string,",
-				"          Topology5 as string,",
-				"          Title as string,",
-				"          StbModel as string,",
-				"          StbManufacturer as string,",
-				"          StbSwVersion as string,",
-				"          StreamingProtocol as string,",
-				"          CdnNodeHostname as string,",
-				"          CdnPop as string,",
-				"          ChannelName as string,",
-				"          HappinessScore as double,",
-				"          UserId as string,",
-				"          EndTime as timestamp,",
-				"          Hash as string,",
-				"          CdnHostname as string",
+				"FilterRows select(mapColumn(",
+				"          each(match(name!='PipelineId'))",
 				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     format: 'table',",
-				"     tableName: ($sinkTable),",
-				"     store: 'azuredataexplorer') ~> KustoSinkReference",
-				"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
-				"     negate:true,",
-				"     broadcast: 'auto')~> ExistingHashes",
-				"ExistingHashes sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+				"AzureDataLakeSource filter(PipelineId == $pipelineId) ~> FilterRows",
+				"SelectColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table',",
 				"     tableName: ($sinkTable),",
 				"     store: 'azuredataexplorer',",
-				"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",

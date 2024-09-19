@@ -40,6 +40,10 @@
 						"logsFolderPath": {
 							"value": "@pipeline().parameters.logsFolderPath",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().parameters.pipelineId",
+							"type": "Expression"
 						}
 					}
 				}
@@ -117,7 +121,7 @@
 			},
 			"sinkTable": {
 				"type": "string",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
 			},
 			"logsFileSystem": {
 				"type": "string",
@@ -133,7 +137,11 @@
 			},
 			"expectedSinkTable": {
 				"type": "string",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
+			},
+			"pipelineId": {
+				"type": "string",
+				"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 			}
 		},
 		"variables": {

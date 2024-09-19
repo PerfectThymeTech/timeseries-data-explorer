@@ -52,6 +52,10 @@
 						"logsFolderPath": {
 							"value": "@variables('logsFolderPath')",
 							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().GroupId",
+							"type": "Expression"
 						}
 					}
 				}
@@ -100,6 +104,10 @@
 						},
 						"logsFolderPath": {
 							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().GroupId",
 							"type": "Expression"
 						}
 					}
@@ -153,6 +161,10 @@
 						},
 						"logsFolderPath": {
 							"value": "@variables('logsFolderPath')",
+							"type": "Expression"
+						},
+						"pipelineId": {
+							"value": "@pipeline().GroupId",
 							"type": "Expression"
 						}
 					}
@@ -220,7 +232,7 @@
 			},
 			"kustoTable": {
 				"type": "String",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
 			},
 			"rawFolderPath": {
 				"type": "String",

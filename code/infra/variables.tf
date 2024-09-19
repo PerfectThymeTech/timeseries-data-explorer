@@ -136,14 +136,23 @@ variable "kusto_cluster_sku" {
 
 variable "kusto_cluster_language_extensions" {
   description = "Specifies the kusto cluster language extensions."
-  type        = list(string)
-  sensitive   = false
-  default     = []
+  type = list(object({
+    name  = string
+    image = string
+  }))
+  sensitive = false
+  default   = []
   validation {
     condition = alltrue([
-      length([for kusto_cluster_language_extensions in toset(var.kusto_cluster_language_extensions) : kusto_cluster_language_extensions if !contains(["PYTHON", "PYTHON_3.10.8", "R"], kusto_cluster_language_extensions)]) <= 0
+      length([for kusto_cluster_language_extension in toset(var.kusto_cluster_language_extensions) : kusto_cluster_language_extension.name if !contains(["PYTHON", "R"], kusto_cluster_language_extension.name)]) <= 0
     ])
-    error_message = "Please specify a valid language extension."
+    error_message = "Please specify a valid language extension name. Valid values are 'PYTHON', and 'R'."
+  }
+  validation {
+    condition = alltrue([
+      length([for kusto_cluster_language_extension in toset(var.kusto_cluster_language_extensions) : kusto_cluster_language_extension.image if !contains(["Python3_6_5", "Python3_10_8", "R"], kusto_cluster_language_extension.image)]) <= 0
+    ])
+    error_message = "Please specify a valid language extension name. Valid values are 'Python3_6_5', 'Python3_10_8', and 'R'."
   }
 }
 

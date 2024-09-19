@@ -152,7 +152,7 @@
 				"typeProperties": {
 					"variableName": "sinkFolderPath",
 					"value": {
-						"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+						"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().parameters.pipelineId)",
 						"type": "Expression"
 					}
 				}
@@ -178,6 +178,9 @@
 				"type": "string"
 			},
 			"logsFolderPath": {
+				"type": "string"
+			},
+			"pipelineId": {
 				"type": "string"
 			}
 		},
