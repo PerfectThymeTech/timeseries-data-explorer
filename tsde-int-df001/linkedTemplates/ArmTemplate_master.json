@@ -35,6 +35,10 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		},
+		"Kusto_properties_pipeline_parameters_timestamp": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
 		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
@@ -124,6 +128,9 @@
 					},
 					"TestUpload_properties_typeProperties_scope": {
 						"value": "[parameters('TestUpload_properties_typeProperties_scope')]"
+					},
+					"Kusto_properties_pipeline_parameters_timestamp": {
+						"value": "[parameters('Kusto_properties_pipeline_parameters_timestamp')]"
 					},
 					"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 						"value": "[parameters('IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath')]"

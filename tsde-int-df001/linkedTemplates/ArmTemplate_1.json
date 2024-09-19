@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		},
+		"Kusto_properties_pipeline_parameters_timestamp": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
 		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
@@ -99,6 +103,10 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
@@ -175,6 +183,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -341,7 +352,7 @@
 						"typeProperties": {
 							"variableName": "sinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().parameters.pipelineId)",
 								"type": "Expression"
 							}
 						}
@@ -370,6 +381,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -582,6 +596,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -630,6 +648,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -683,6 +705,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -753,7 +779,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"uploadFileSystem": {
 						"type": "String",
@@ -827,6 +853,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -875,6 +905,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -928,6 +962,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -998,7 +1036,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"rawFolderPath": {
 						"type": "String",
@@ -1062,6 +1100,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -1143,7 +1185,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -1159,7 +1201,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -1224,6 +1270,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -1297,7 +1347,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "iptv/4614736d-2afa-4739-80a7-d6b449958736"
+						"defaultValue": "iptv/ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -1326,6 +1376,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "iptv"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -1390,6 +1444,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1585,7 +1643,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -1700,6 +1758,10 @@
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -1780,7 +1842,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -1796,7 +1858,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -1861,6 +1927,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -1934,7 +2004,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "ott/a44a15d8-7148-47e5-bf8b-e1d25c5d1935"
+						"defaultValue": "ott/9695e536-e225-46de-9ed8-142bd4d10b0b"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -1963,6 +2033,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "ott"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -2029,6 +2103,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -2224,7 +2302,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -2304,23 +2382,27 @@
 			"properties": {
 				"annotations": [],
 				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "KustoMainPipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "KustoMainPipeline",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"timestamp": "[parameters('Kusto_properties_pipeline_parameters_timestamp')]"
 					}
-				],
-				"type": "ScheduleTrigger",
+				},
+				"type": "TumblingWindowTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 15,
-						"startTime": "2024-05-16T00:03:00",
-						"timeZone": "W. Europe Standard Time"
-					}
+					"frequency": "Minute",
+					"interval": 60,
+					"startTime": "2024-01-01T00:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 2,
+					"retryPolicy": {
+						"count": 1,
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
 				}
 			},
 			"dependsOn": []

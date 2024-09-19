@@ -26,6 +26,9 @@
 		"IptvUpload_properties_typeProperties_scope": {
 			"value": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		},
+		"Kusto_properties_pipeline_parameters_timestamp": {
+			"value": "@trigger().outputs.windowEndTime"
+		},
 		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
 			"value": "@triggerBody().folderPath"
 		},
