@@ -232,7 +232,7 @@
 			},
 			"kustoTable": {
 				"type": "String",
-				"defaultValue": "ott_raw"
+				"defaultValue": "ott_ingest"
 			},
 			"rawFolderPath": {
 				"type": "String",
