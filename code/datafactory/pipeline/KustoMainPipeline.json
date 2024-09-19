@@ -55,6 +55,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"timestamp": {
+				"type": "string"
+			}
+		},
 		"variables": {
 			"kustoDatabase": {
 				"type": "String",
