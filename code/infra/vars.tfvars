@@ -33,8 +33,8 @@ data_factory_global_parameters = {
   }
 }
 data_factory_published_content = {
-  parameters_file = "../../sc4-dev-df001/ARMTemplateParametersForFactory.json"
-  template_file   = "../../sc4-dev-df001/ARMTemplateForFactory.json"
+  parameters_file = "../../tsde-int-df001/ARMTemplateParametersForFactory.json"
+  template_file   = "../../tsde-int-df001/ARMTemplateForFactory.json"
 }
 data_factory_published_content_template_variables = {}
 data_factory_triggers_start = [
