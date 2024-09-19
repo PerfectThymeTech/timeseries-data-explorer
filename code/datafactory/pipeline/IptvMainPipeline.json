@@ -232,7 +232,7 @@
 			},
 			"kustoTable": {
 				"type": "String",
-				"defaultValue": "iptv_raw"
+				"defaultValue": "iptv_ingest"
 			},
 			"uploadFileSystem": {
 				"type": "String",
