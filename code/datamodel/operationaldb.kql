@@ -1,4 +1,52 @@
+////////////////////////////////////////////////
+// Create ingest tables
+////////////////////////////////////////////////
+
+.create-merge tables
+    ott_ingest(
+        Country: string,
+        Service: string,
+        ServiceType: string,
+        Device: string,
+        Title: string,
+        Isp: string,
+        CdnHostname: string,
+        CdnPop: string,
+        AppReleaseVersion: string,
+        Browser: string,
+        Os: string,
+        Player: string,
+        HappinessScore: real,
+        UserId: string,
+        EndTime: datetime,
+        Hash: string
+    ),
+    iptv_ingest(
+        Country: string,
+        Service: string,
+        ServiceType: string,
+        Topology2: string,
+        Topology3: string,
+        Topology4: string,
+        Topology5: string,
+        Title: string,
+        StbModel: string,
+        StbManufacturer: string,
+        StbSwVersion: string,
+        StreamingProtocol: string,
+        CdnHostname: string,
+        CdnPop: string,
+        ChannelName: string,
+        HappinessScore: real,
+        UserId: string,
+        EndTime: datetime,
+        Hash: string
+    )
+
+////////////////////////////////////////////////
 // Create raw tables
+////////////////////////////////////////////////
+
 .create-merge tables
     ott_raw(
         Country: string,
@@ -40,7 +88,10 @@
         Hash: string
     )
 
+////////////////////////////////////////////////
 // Create curated tables
+////////////////////////////////////////////////
+
 .create-merge tables
     ott_happiness(
         Country: string,
@@ -80,7 +131,10 @@
         Timestamp: datetime
     )
 
+////////////////////////////////////////////////
 // Create helper tables
+////////////////////////////////////////////////
+
 .create-merge tables
     thresholds (
         name: string,
@@ -88,7 +142,20 @@
         timestamp: datetime
     )
 
+////////////////////////////////////////////////
 // Create function
+////////////////////////////////////////////////
+
+.create-or-alter function with (docstring = 'Function for OTT update policy', folder='ott') OttUpdatePolicy() {
+    ott_ingest
+    | join kind=leftanti hint.shufflekey=Country ott_raw on $left.Hash == $right.Hash and $left.Country == $right.Country
+}
+
+.create-or-alter function with (docstring = 'Function for IPTV update policy', folder='iptv') IptvUpdatePolicy() {
+    iptv_ingest
+    | join kind=leftanti hint.shufflekey=Country iptv_raw on $left.Hash == $right.Hash and $left.Country == $right.Country
+}
+
 .create-or-alter function with (docstring = 'Function to get latest threshold value for named threshold', folder='thresholds') GetThreshold(valueName: string) {
     toscalar(
         thresholds
@@ -99,10 +166,12 @@
     )
 }
 
-.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore() {
-    let currentTimestamp = now();
-    let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
+.create-or-alter function with (docstring = 'Function to get average happiness scores for iptv data', folder='iptv') IptvGetAvgHappinessScore(timestamp: string) {
+    let currentTimestamp = todatetime(timestamp);
+    let movingWindowInMinutes = toint(GetThreshold('movingWindowInMinutes'));
+    let startTimestamp = datetime_add('minute', -movingWindowInMinutes, currentTimestamp);
     iptv_raw
+    | where EndTime between (startTimestamp .. currentTimestamp)
     | summarize
         AvgHappinessScore = avg(HappinessScore),
         NumberOfUsers = dcount(UserId),
@@ -125,10 +194,12 @@
         ChannelName
 }
 
-.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore() {
-    let currentTimestamp = now();
-    let movingWindowInMinutes = GetThreshold('movingWindowInMinutes');
+.create-or-alter function with (docstring = 'Function to get average happiness scores for ott data', folder='ott') OttGetAvgHappinessScore(timestamp: string) {
+    let currentTimestamp = todatetime(timestamp);
+    let movingWindowInMinutes = toint(GetThreshold('movingWindowInMinutes'));
+    let startTimestamp = datetime_add('minute', -movingWindowInMinutes, currentTimestamp);
     ott_raw
+    | where EndTime between (startTimestamp .. currentTimestamp)
     | summarize
         AvgHappinessScore = avg(HappinessScore),
         NumberOfUsers = dcount(UserId),
@@ -203,7 +274,21 @@
 }
 
 ////////////////////////////////////////////////
-// Create materialized view and view for testing
+// Create update policies
+////////////////////////////////////////////////
+
+.alter table ott_raw policy update
+@'[{ "IsEnabled": true, "Source": "ott_ingest", "Query": "OttUpdatePolicy()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+
+.alter-merge table ott_ingest policy retention softdelete = 0s;
+
+.alter table iptv_raw policy update
+@'[{ "IsEnabled": true, "Source": "iptv_ingest", "Query": "IptvUpdatePolicy()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+
+.alter-merge table iptv_ingest policy retention softdelete = 0s;
+
+////////////////////////////////////////////////
+// Create materialized views
 ////////////////////////////////////////////////
 
 // Create materalized view
@@ -250,7 +335,10 @@
         Player
 }
 
+////////////////////////////////////////////////
 // Create views
+////////////////////////////////////////////////
+
 .create-or-alter function with (view=true, docstring='View to capture critical iptv items below the happiness threshold', folder='iptv') iptv_happiness_critical_mv {
     iptv_happiness_mv
     | where AvgHappinessScore < GetThreshold('happiness') and NumberOfUsers > GetThreshold('minimumNumberOfUsersPerWindow')
