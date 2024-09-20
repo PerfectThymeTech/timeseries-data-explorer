@@ -1,6 +1,6 @@
 location    = "germanywestcentral"
 environment = "dev"
-prefix      = "mysc4"
+prefix      = "sc4"
 tags        = {}
 
 # Service variables
@@ -41,7 +41,6 @@ data_factory_triggers_start = [
   "IptvUpload",
   "OttUpload",
   "Reference",
-  "Kusto"
 ]
 data_factory_pipelines_run = [
   "ReferenceMainPipeline"

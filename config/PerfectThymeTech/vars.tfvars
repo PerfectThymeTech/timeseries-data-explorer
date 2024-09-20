@@ -47,7 +47,6 @@ data_factory_triggers_start = [
   "IptvUpload",
   "OttUpload",
   "Reference",
-  "Kusto"
 ]
 data_factory_pipelines_run = [
   "ReferenceMainPipeline"
