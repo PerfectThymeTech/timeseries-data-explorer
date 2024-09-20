@@ -5,11 +5,11 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "sc4-dev-df001"
+			"defaultValue": "tsde-int-df001"
 		},
 		"AzureDataExplorer_properties_typeProperties_endpoint": {
 			"type": "string",
-			"defaultValue": "https://sc4-dev-kusto001.germanywestcentral.kusto.windows.net"
+			"defaultValue": "https://tsde-int-kusto001.germanywestcentral.kusto.windows.net"
 		},
 		"AzureDataExplorer_properties_typeProperties_database": {
 			"type": "string",
@@ -17,11 +17,11 @@
 		},
 		"AzureDataLakeStorage_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://sc4devstg001.dfs.core.windows.net/"
+			"defaultValue": "https://tsdeintstg001.dfs.core.windows.net/"
 		},
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://sc4-dev-vault001.vault.azure.net/"
+			"defaultValue": "https://tsde-int-vault001.vault.azure.net/"
 		},
 		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
@@ -33,7 +33,11 @@
 		},
 		"IptvUpload_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
+		},
+		"Kusto_properties_pipeline_parameters_timestamp": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
 		},
 		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
@@ -45,7 +49,7 @@
 		},
 		"OttUpload_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		},
 		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
 			"type": "string",
@@ -57,7 +61,7 @@
 		},
 		"TestUpload_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		}
 	},
 	"variables": {
@@ -106,19 +110,17 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
-									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
-									"KustoSinkReference": {
-										"linkedService": {
-											"databaseName": "operationaldb"
-										}
-									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -130,9 +132,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -196,6 +198,9 @@
 					},
 					"logsFolderPath": {
 						"type": "string"
+					},
+					"pipelineId": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -204,8 +209,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvCuratedToKusto')]"
 			]
 		},
 		{
@@ -264,6 +268,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -312,6 +320,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -365,6 +377,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -435,7 +451,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"uploadFileSystem": {
 						"type": "String",
@@ -509,6 +525,10 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
@@ -517,9 +537,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -586,6 +606,9 @@
 					},
 					"logsFolderPath": {
 						"type": "string"
+					},
+					"pipelineId": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -594,8 +617,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/IptvRawToCurated')]"
 			]
 		},
 		{
@@ -754,7 +776,7 @@
 						"typeProperties": {
 							"variableName": "sinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().parameters.pipelineId)",
 								"type": "Expression"
 							}
 						}
@@ -783,6 +805,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -825,7 +850,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"command": {
-								"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore()')",
+								"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore(\"', pipeline().parameters.timestamp, '\")')",
 								"type": "Expression"
 							},
 							"commandTimeout": "00:20:00"
@@ -851,6 +876,9 @@
 					},
 					"iptvHappinessTable": {
 						"type": "String"
+					},
+					"timestamp": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -890,6 +918,10 @@
 								"iptvHappinessTable": {
 									"value": "@variables('iptvHappinessTable')",
 									"type": "Expression"
+								},
+								"timestamp": {
+									"value": "@pipeline().parameters.timestamp",
+									"type": "Expression"
 								}
 							}
 						}
@@ -916,6 +948,10 @@
 								"ottHappinessTable": {
 									"value": "@variables('ottHappinessTable')",
 									"type": "Expression"
+								},
+								"timestamp": {
+									"value": "@pipeline().parameters.timestamp",
+									"type": "Expression"
 								}
 							}
 						}
@@ -923,6 +959,11 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"timestamp": {
+						"type": "string"
+					}
 				},
 				"variables": {
 					"kustoDatabase": {
@@ -968,7 +1009,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"command": {
-								"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore()')",
+								"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore(\"', pipeline().parameters.timestamp, '\")')",
 								"type": "Expression"
 							},
 							"commandTimeout": "00:20:00"
@@ -994,6 +1035,9 @@
 					},
 					"ottHappinessTable": {
 						"type": "String"
+					},
+					"timestamp": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -1047,19 +1091,17 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
 									"AzureDataLakeSource": {},
-									"KustoSinkReference": {},
 									"KustoSink": {}
 								},
 								"linkedServiceParameters": {
-									"KustoSinkReference": {
-										"linkedService": {
-											"databaseName": "operationaldb"
-										}
-									},
 									"KustoSink": {
 										"linkedService": {
 											"databaseName": {
@@ -1071,9 +1113,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1137,6 +1179,9 @@
 					},
 					"logsFolderPath": {
 						"type": "string"
+					},
+					"pipelineId": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -1145,8 +1190,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/OttCuratedToKusto')]"
 			]
 		},
 		{
@@ -1205,6 +1249,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -1253,6 +1301,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1306,6 +1358,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1376,7 +1432,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"rawFolderPath": {
 						"type": "String",
@@ -1450,6 +1506,10 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
@@ -1458,9 +1518,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -1527,6 +1587,9 @@
 					},
 					"logsFolderPath": {
 						"type": "string"
+					},
+					"pipelineId": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -1535,8 +1598,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/OttRawToCurated')]",
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
+				"[concat(variables('factoryId'), '/dataflows/OttRawToCurated')]"
 			]
 		},
 		{
@@ -1695,7 +1757,7 @@
 						"typeProperties": {
 							"variableName": "sinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().parameters.pipelineId)",
 								"type": "Expression"
 							}
 						}
@@ -1724,6 +1786,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -2401,6 +2466,10 @@
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -2481,7 +2550,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -2497,7 +2566,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -2564,6 +2637,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -2637,7 +2714,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "iptv/4614736d-2afa-4739-80a7-d6b449958736"
+						"defaultValue": "iptv/ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -2666,6 +2743,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "iptv"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -2732,6 +2813,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -2927,7 +3012,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -3044,6 +3129,10 @@
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -3124,7 +3213,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -3140,7 +3229,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -3207,6 +3300,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -3280,7 +3377,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "ott/a44a15d8-7148-47e5-bf8b-e1d25c5d1935"
+						"defaultValue": "ott/9695e536-e225-46de-9ed8-142bd4d10b0b"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -3309,6 +3406,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "ott"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -3375,6 +3476,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -3570,7 +3675,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -3835,15 +3940,9 @@
 				"typeProperties": {
 					"endpoint": "[parameters('AzureDataExplorer_properties_typeProperties_endpoint')]",
 					"database": "[parameters('AzureDataExplorer_properties_typeProperties_database')]"
-				},
-				"connectVia": {
-					"referenceName": "IntegrationRuntime001",
-					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage')]",
@@ -3855,15 +3954,9 @@
 				"type": "AzureBlobFS",
 				"typeProperties": {
 					"url": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
-				},
-				"connectVia": {
-					"referenceName": "IntegrationRuntime001",
-					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/IntegrationRuntime001')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
@@ -3920,23 +4013,27 @@
 			"properties": {
 				"annotations": [],
 				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "KustoMainPipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "KustoMainPipeline",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"timestamp": "[parameters('Kusto_properties_pipeline_parameters_timestamp')]"
 					}
-				],
-				"type": "ScheduleTrigger",
+				},
+				"type": "TumblingWindowTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 15,
-						"startTime": "2024-05-16T00:03:00",
-						"timeZone": "W. Europe Standard Time"
-					}
+					"frequency": "Minute",
+					"interval": 60,
+					"startTime": "2024-01-01T00:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 2,
+					"retryPolicy": {
+						"count": 1,
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
 				}
 			},
 			"dependsOn": [
@@ -4047,7 +4144,6 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"type": "Managed",
-				"description": "Integration Runtime 001",
 				"typeProperties": {
 					"computeProperties": {
 						"location": "AutoResolve",
@@ -4081,14 +4177,6 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzureDataExplorer",
-								"type": "LinkedServiceReference"
-							},
-							"name": "KustoSinkReference",
-							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -4107,7 +4195,12 @@
 					],
 					"transformations": [
 						{
-							"name": "ExistingHashes"
+							"name": "SelectColumns",
+							"description": "Drop Pipeline ID Column"
+						},
+						{
+							"name": "FilterRows",
+							"description": "Filter based on pipeline IDs."
 						}
 					],
 					"scriptLines": [
@@ -4116,7 +4209,8 @@
 						"     sourceFolderPath as string,",
 						"     sinkTable as string,",
 						"     logsFileSystem as string,",
-						"     logsFolderPath as string",
+						"     logsFolderPath as string,",
+						"     pipelineId as string",
 						"}",
 						"source(output(",
 						"          Country as string,",
@@ -4137,7 +4231,8 @@
 						"          HappinessScore as float,",
 						"          UserId as string,",
 						"          EndTime as timestamp,",
-						"          Hash as string",
+						"          Hash as string,",
+						"          PipelineId as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -4145,42 +4240,17 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"source(output(",
-						"          Country as string,",
-						"          Service as string,",
-						"          ServiceType as string,",
-						"          Topology2 as string,",
-						"          Topology3 as string,",
-						"          Topology4 as string,",
-						"          Topology5 as string,",
-						"          Title as string,",
-						"          StbModel as string,",
-						"          StbManufacturer as string,",
-						"          StbSwVersion as string,",
-						"          StreamingProtocol as string,",
-						"          CdnNodeHostname as string,",
-						"          CdnPop as string,",
-						"          ChannelName as string,",
-						"          HappinessScore as double,",
-						"          UserId as string,",
-						"          EndTime as timestamp,",
-						"          Hash as string,",
-						"          CdnHostname as string",
+						"FilterRows select(mapColumn(",
+						"          each(match(name!='PipelineId'))",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: ($sinkTable),",
-						"     store: 'azuredataexplorer') ~> KustoSinkReference",
-						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
-						"     negate:true,",
-						"     broadcast: 'auto')~> ExistingHashes",
-						"ExistingHashes sink(allowSchemaDrift: true,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+						"AzureDataLakeSource filter(PipelineId == $pipelineId) ~> FilterRows",
+						"SelectColumns sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
 						"     store: 'azuredataexplorer',",
-						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     outputAssertFailedRows: true,",
@@ -4243,6 +4313,10 @@
 						},
 						{
 							"name": "AlterRow"
+						},
+						{
+							"name": "AddColumns",
+							"description": "Add static pipeline ID column."
 						}
 					],
 					"scriptLines": [
@@ -4253,7 +4327,8 @@
 						"     sinkFileSystem as string,",
 						"     sinkFolderPath as string,",
 						"     logsFileSystem as string,",
-						"     logsFolderPath as string",
+						"     logsFolderPath as string,",
+						"     pipelineId as string",
 						"}",
 						"source(output(",
 						"          country as string,",
@@ -4312,8 +4387,9 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"AddColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"RenameColumns derive(PipelineId = $pipelineId) ~> AddColumns",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
@@ -4338,7 +4414,8 @@
 						"     assertFailure_folderPath: ($logsFolderPath),",
 						"     partitionBy('key',",
 						"          0,",
-						"          Country",
+						"          Country,",
+						"          PipelineId",
 						"     )) ~> AzureDataLakeSink"
 					]
 				}
@@ -4365,14 +4442,6 @@
 							},
 							"name": "AzureDataLakeSource",
 							"description": "Source dataset in Azure Data Lake"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzureDataExplorer",
-								"type": "LinkedServiceReference"
-							},
-							"name": "KustoSinkReference",
-							"description": "Kusto Sink Reference Dataset"
 						}
 					],
 					"sinks": [
@@ -4391,7 +4460,12 @@
 					],
 					"transformations": [
 						{
-							"name": "ExistingHashes"
+							"name": "FilterRows",
+							"description": "Filter based on pipeline IDs."
+						},
+						{
+							"name": "SelectColumns",
+							"description": "Drop Pipeline ID Column"
 						}
 					],
 					"scriptLines": [
@@ -4400,7 +4474,8 @@
 						"     sourceFolderPath as string,",
 						"     sinkTable as string,",
 						"     logsFileSystem as string,",
-						"     logsFolderPath as string",
+						"     logsFolderPath as string,",
+						"     pipelineId as string",
 						"}",
 						"source(output(",
 						"          Country as string,",
@@ -4418,7 +4493,8 @@
 						"          HappinessScore as float,",
 						"          UserId as string,",
 						"          EndTime as timestamp,",
-						"          Hash as string",
+						"          Hash as string,",
+						"          PipelineId as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -4426,41 +4502,20 @@
 						"     format: 'delta',",
 						"     fileSystem: ($sourceFileSystem),",
 						"     folderPath: ($sourceFolderPath)) ~> AzureDataLakeSource",
-						"source(output(",
-						"          Country as string,",
-						"          Service as string,",
-						"          ServiceType as string,",
-						"          Device as string,",
-						"          Title as string,",
-						"          Isp as string,",
-						"          CdnNodeHostname as string,",
-						"          CdnPop as string,",
-						"          AppReleaseVersion as string,",
-						"          Browser as string,",
-						"          Os as string,",
-						"          Player as string,",
-						"          HappinessScore as double,",
-						"          UserId as string,",
-						"          EndTime as timestamp,",
-						"          Hash as string,",
-						"          CdnHostname as string",
+						"AzureDataLakeSource filter(PipelineId == $pipelineId) ~> FilterRows",
+						"FilterRows select(mapColumn(",
+						"          each(match(name!='PipelineId'))",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: ($sinkTable),",
-						"     store: 'azuredataexplorer') ~> KustoSinkReference",
-						"AzureDataLakeSource, KustoSinkReference exists(AzureDataLakeSource@Hash == KustoSinkReference@Hash,",
-						"     negate:true,",
-						"     broadcast: 'auto')~> ExistingHashes",
-						"ExistingHashes sink(allowSchemaDrift: true,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+						"SelectColumns sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     tableName: ($sinkTable),",
 						"     store: 'azuredataexplorer',",
-						"     postSQLs:[(concat('.delete table ', $sinkTable, ' records with (whatif=false) <| ', $sinkTable, ' | sort by Hash, ingestion_time() desc | where row_cumsum(1,prev(Hash) != Hash) > 1'))],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
 						"     outputAssertFailedRows: true,",
 						"     assertFailure_fileSystem: ($logsFileSystem),",
 						"     assertFailure_folderPath: ($logsFolderPath)) ~> KustoSink"
@@ -4521,6 +4576,10 @@
 						},
 						{
 							"name": "AlterRow"
+						},
+						{
+							"name": "AddColumns",
+							"description": "Add static pipeline ID column."
 						}
 					],
 					"scriptLines": [
@@ -4531,7 +4590,8 @@
 						"     sinkFileSystem as string,",
 						"     sinkFolderPath as string,",
 						"     logsFileSystem as string,",
-						"     logsFolderPath as string",
+						"     logsFolderPath as string,",
+						"     pipelineId as string",
 						"}",
 						"source(output(",
 						"          country as string,",
@@ -4584,8 +4644,9 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameColumns",
-						"RenameColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
+						"AddColumns filter(!isNull(HappinessScore)) ~> FilterEmptyHappinessScore",
 						"FilterEmptyHappinessScore alterRow(upsertIf(true())) ~> AlterRow",
+						"RenameColumns derive(PipelineId = $pipelineId) ~> AddColumns",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delta',",
@@ -4610,7 +4671,8 @@
 						"     assertFailure_folderPath: ($logsFolderPath),",
 						"     partitionBy('key',",
 						"          0,",
-						"          Country",
+						"          Country,",
+						"          PipelineId",
 						"     )) ~> AzureDataLakeSink"
 					]
 				}

@@ -5,7 +5,23 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "sc4-dev-df001"
+			"defaultValue": "tsde-int-df001"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"TestUpload_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
+		},
+		"Kusto_properties_pipeline_parameters_timestamp": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
 		},
 		"IptvUpload_properties_IptvMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
@@ -17,7 +33,7 @@
 		},
 		"IptvUpload_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		},
 		"OttUpload_properties_OttMainPipeline_parameters_uploadSourceFolderPath": {
 			"type": "string",
@@ -29,154 +45,13 @@
 		},
 		"OttUpload_properties_typeProperties_scope": {
 			"type": "string",
-			"defaultValue": "/subscriptions/be25820a-df86-4794-9e95-6a45cd5c0941/resourceGroups/sc4-dev-stg-rg/providers/Microsoft.Storage/storageAccounts/sc4devstg001"
+			"defaultValue": "/subscriptions/1fdab118-1638-419a-8b12-06c9543714a0/resourceGroups/tsde-int-stg-rg/providers/Microsoft.Storage/storageAccounts/tsdeintstg001"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
-		{
-			"name": "[concat(parameters('factoryName'), '/OttCuratedToKusto')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "DataflowCuratedToKusto",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 1,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "OttCuratedToKusto",
-								"type": "DataFlowReference",
-								"parameters": {
-									"sourceFileSystem": {
-										"value": "'@{pipeline().parameters.sourceFileSystem}'",
-										"type": "Expression"
-									},
-									"sourceFolderPath": {
-										"value": "'@{pipeline().parameters.sourceFolderPath}'",
-										"type": "Expression"
-									},
-									"sinkTable": {
-										"value": "'@{pipeline().parameters.sinkTable}'",
-										"type": "Expression"
-									},
-									"logsFileSystem": {
-										"value": "'@{pipeline().parameters.logsFileSystem}'",
-										"type": "Expression"
-									},
-									"logsFolderPath": {
-										"value": "'@{pipeline().parameters.logsFolderPath}'",
-										"type": "Expression"
-									}
-								},
-								"datasetParameters": {
-									"AzureDataLakeSource": {},
-									"KustoSinkReference": {},
-									"KustoSink": {}
-								},
-								"linkedServiceParameters": {
-									"KustoSinkReference": {
-										"linkedService": {
-											"databaseName": "operationaldb"
-										}
-									},
-									"KustoSink": {
-										"linkedService": {
-											"databaseName": {
-												"value": "@pipeline().parameters.sinkDatabase",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							},
-							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
-							},
-							"traceLevel": "Coarse"
-						}
-					},
-					{
-						"name": "SetPipelineOutput",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "DataflowCuratedToKusto",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "pipelineReturnValue",
-							"value": [
-								{
-									"key": "sinkDatabase",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkDatabase"
-									}
-								},
-								{
-									"key": "sinkTable",
-									"value": {
-										"type": "Expression",
-										"content": "@pipeline().parameters.sinkTable"
-									}
-								}
-							],
-							"setSystemVariable": true
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"sourceFileSystem": {
-						"type": "string"
-					},
-					"sourceFolderPath": {
-						"type": "string"
-					},
-					"sinkDatabase": {
-						"type": "string"
-					},
-					"sinkTable": {
-						"type": "string"
-					},
-					"logsFileSystem": {
-						"type": "string"
-					},
-					"logsFolderPath": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Pipelines/OTT"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
 		{
 			"name": "[concat(parameters('factoryName'), '/OttRawToCurated')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -228,6 +103,10 @@
 									"logsFolderPath": {
 										"value": "'@{pipeline().parameters.logsFolderPath}'",
 										"type": "Expression"
+									},
+									"pipelineId": {
+										"value": "'@{pipeline().parameters.pipelineId}'",
+										"type": "Expression"
 									}
 								},
 								"datasetParameters": {
@@ -236,9 +115,9 @@
 								}
 							},
 							"staging": {},
-							"integrationRuntime": {
-								"referenceName": "IntegrationRuntime001",
-								"type": "IntegrationRuntimeReference"
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
 							"traceLevel": "Coarse"
 						}
@@ -304,6 +183,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -470,7 +352,7 @@
 						"typeProperties": {
 							"variableName": "sinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().GroupId)",
+								"value": "@concat(pipeline().parameters.sinkFolderPath, '/', pipeline().parameters.pipelineId)",
 								"type": "Expression"
 							}
 						}
@@ -499,6 +381,9 @@
 						"type": "string"
 					},
 					"logsFolderPath": {
+						"type": "string"
+					},
+					"pipelineId": {
 						"type": "string"
 					}
 				},
@@ -624,6 +509,38 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TestUpload')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "TestParseBlobTrigger",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"uploadSourceFolderPath": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFolderPath')]",
+							"uploadSourceFileName": "[parameters('TestUpload_properties_TestParseBlobTrigger_parameters_uploadSourceFileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/upload-ott/blobs/",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('TestUpload_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/IptvMainPipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -679,6 +596,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -727,6 +648,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -780,6 +705,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -850,7 +779,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"uploadFileSystem": {
 						"type": "String",
@@ -924,6 +853,10 @@
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -972,6 +905,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1025,6 +962,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@variables('logsFolderPath')",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1095,7 +1036,7 @@
 					},
 					"kustoTable": {
 						"type": "String",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"rawFolderPath": {
 						"type": "String",
@@ -1113,7 +1054,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/OttRawToCurated')]",
-				"[concat(variables('factoryId'), '/pipelines/OttCuratedToKusto')]",
 				"[concat(variables('factoryId'), '/pipelines/OttUploadToRaw')]"
 			]
 		},
@@ -1160,6 +1100,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -1241,7 +1185,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -1257,7 +1201,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "iptv_raw"
+						"defaultValue": "iptv_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -1322,6 +1270,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -1395,7 +1347,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "iptv/4614736d-2afa-4739-80a7-d6b449958736"
+						"defaultValue": "iptv/ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -1424,6 +1376,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "iptv"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "ff1ab6f4-0cca-4dbf-8235-d30d19ed73a3"
 					}
 				},
 				"variables": {
@@ -1488,6 +1444,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -1683,7 +1643,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -1798,6 +1758,10 @@
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
 									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
+									"type": "Expression"
 								}
 							}
 						}
@@ -1878,7 +1842,7 @@
 					},
 					"sinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
 					},
 					"logsFileSystem": {
 						"type": "string",
@@ -1894,7 +1858,11 @@
 					},
 					"expectedSinkTable": {
 						"type": "string",
-						"defaultValue": "ott_raw"
+						"defaultValue": "ott_ingest"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -1910,9 +1878,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/OttCuratedToKusto')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/TestOttRawToCurated')]",
@@ -1961,6 +1927,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().parameters.pipelineId",
 									"type": "Expression"
 								}
 							}
@@ -2034,7 +2004,7 @@
 					},
 					"sourceFolderPath": {
 						"type": "string",
-						"defaultValue": "ott/a44a15d8-7148-47e5-bf8b-e1d25c5d1935"
+						"defaultValue": "ott/9695e536-e225-46de-9ed8-142bd4d10b0b"
 					},
 					"sourceFileName": {
 						"type": "string",
@@ -2063,6 +2033,10 @@
 					"expectedSinkFolderPath": {
 						"type": "string",
 						"defaultValue": "ott"
+					},
+					"pipelineId": {
+						"type": "string",
+						"defaultValue": "9695e536-e225-46de-9ed8-142bd4d10b0b"
 					}
 				},
 				"variables": {
@@ -2129,6 +2103,10 @@
 								},
 								"logsFolderPath": {
 									"value": "@pipeline().parameters.logsFolderPath",
+									"type": "Expression"
+								},
+								"pipelineId": {
+									"value": "@pipeline().GroupId",
 									"type": "Expression"
 								}
 							}
@@ -2324,7 +2302,7 @@
 						"typeProperties": {
 							"variableName": "expectedSinkFolderPath",
 							"value": {
-								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/')",
+								"value": "@concat(pipeline().parameters.expectedSinkFolderPath, '/', pipeline().GroupId)",
 								"type": "Expression"
 							}
 						}
@@ -2404,23 +2382,27 @@
 			"properties": {
 				"annotations": [],
 				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "KustoMainPipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "KustoMainPipeline",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"timestamp": "[parameters('Kusto_properties_pipeline_parameters_timestamp')]"
 					}
-				],
-				"type": "ScheduleTrigger",
+				},
+				"type": "TumblingWindowTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 15,
-						"startTime": "2024-05-16T00:03:00",
-						"timeZone": "W. Europe Standard Time"
-					}
+					"frequency": "Minute",
+					"interval": 60,
+					"startTime": "2024-01-01T00:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 2,
+					"retryPolicy": {
+						"count": 1,
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
 				}
 			},
 			"dependsOn": []

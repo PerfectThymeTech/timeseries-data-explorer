@@ -1,7 +1,7 @@
 exclude: |
   (?x)^(
     code/datafactory/.*|
-    sc4-dev-df001/.*
+    tsde-int-df001/.*
   )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
