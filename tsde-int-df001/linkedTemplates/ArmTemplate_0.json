@@ -261,7 +261,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"command": {
-								"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore(', pipeline().parameters.timestamp, ')')",
+								"value": "@concat('.set-or-append async ', pipeline().parameters.iptvHappinessTable,' <| IptvGetAvgHappinessScore(\"', pipeline().parameters.timestamp, '\")')",
 								"type": "Expression"
 							},
 							"commandTimeout": "00:20:00"
@@ -321,7 +321,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"command": {
-								"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore(', pipeline().parameters.timestamp, ')')",
+								"value": "@concat('.set-or-append async ', pipeline().parameters.ottHappinessTable,' <| OttGetAvgHappinessScore(\"', pipeline().parameters.timestamp, '\")')",
 								"type": "Expression"
 							},
 							"commandTimeout": "00:20:00"
